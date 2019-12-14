@@ -3,6 +3,7 @@ import tensorflow as tf
 import pickle
 import pandas
 from sklearn.preprocessing import LabelEncoder
+import matplotlib.pyplot as plt
 import pyroomacoustics as pra
 
 
@@ -85,7 +86,7 @@ class noise_distribution(object):
         self.stddev = stddev
 
     def augment(self, x: tf.Tensor) -> tf.Tensor:
-        noise = np.random.normal(shape=x.shape, mean=self.mean, stddev=self.stddev)
+        noise = np.random.normal(loc=self.mean, scale=self.stddev, size=x.shape)
         return x + noise
 
 
@@ -99,33 +100,39 @@ class room_distribution(object):
             room = pra.ShoeBox(dims, fs=16000)
             self.rooms.append(room)
 
-    def sample_source(self, room: pra.Room):
-        walls = room.walls
+    @staticmethod
+    def sample_loc(walls):
         for wall in walls:
             if wall.corners[0][0] == wall.corners[1][0]:
-                y_len = np.abs(wall.corners[0][1] - wall.corners[1][1])
+                x_len = np.abs(wall.corners[0][1] - wall.corners[1][1])
             else:
-                x_len = np.abs(wall.corners[0][0] - wall.corners[1][0])
+                y_len = np.abs(wall.corners[0][0] - wall.corners[1][0])
         y_pos = np.random.uniform(low=0, high=y_len)
         x_pos = np.random.uniform(low=0, high=x_len)
         d = []
         d.append(x_pos)
         d.append(y_pos)
-        d = np.asarray(d)
-        return pra.SoundSource(position=d)
+        #d = np.asarray(d)
+        return d
 
-    def sample_mic(self, room: pra.Room):
+    @staticmethod
+    def sample_source(room: pra.Room):
+        d = room_distribution.sample_loc(room.walls)
+        return d
 
-        pass
+    @staticmethod
+    def sample_mic(room: pra.Room):
+        d = room_distribution.sample_loc(room.walls)
+        R = pra.linear_2D_array(d, 1, 0, 0.04)
+        R = pra.MicrophoneArray(R, fs=16000)
+        return R
 
     # returns a room populated with a source and microphone array, drawn from the random distributions
     def sample(self):
         # TODO: add a random source and microphone to a random room, then return
         room = np.random.choice(self.rooms)
-        source = self.sample_source(room)
-        print(source.dim)
-        print(np.asarray(source.position).shape[1])
-        mic = self.sample_mic(room)
+        source = room_distribution.sample_source(room)
+        mic = room_distribution.sample_mic(room)
         room.add_source(source)
         room.add_microphone_array(mic)
         return room
@@ -137,4 +144,8 @@ class room_distribution(object):
         return room.mic_array.signals[1, :]
 
 
-A, b = import_dataset()
+print(np.array([2.4238, 4.43235]))
+rd = room_distribution(100)
+s = rd.sample()
+s.plot()
+plt.show()
