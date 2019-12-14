@@ -141,7 +141,7 @@ class room_distribution(object):
         room = self.sample()
         room.sources[0].add_signal(x)
         room.simulate()
-        return room.mic_array.signals[0, :]
+        return room.mic_array.signals[1, :]
 
 
 print(np.array([2.4238, 4.43235]))
