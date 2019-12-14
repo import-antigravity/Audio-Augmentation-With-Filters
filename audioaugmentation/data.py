@@ -7,7 +7,7 @@ import pyroomacoustics as pra
 
 
 def import_dataset():
-    with open('data\UrbanSound8KDataFrame', 'rb') as fp:
+    with open('..\\data\\UrbanSound8KDataFrame', 'rb') as fp:
         itemlist = pickle.load(fp)
     print(itemlist.columns)
     labels = itemlist.pop('class_label')
@@ -16,20 +16,20 @@ def import_dataset():
     labels = le.fit_transform(labels)
     labels = tf.one_hot(labels, 10)
     features = itemlist.pop('audio')
-    print(len(labels))
-    print(len(features))
-    print(type(labels))
-    features, labels = conform_examples(features, labels, 1000, 0.5)
-    features = tf.convert_to_tensor(features, np.float32)
-    UrbanSound = tf.data.Dataset.from_tensor_slices((features, labels))
     test_set_size = int(0.2 * features.shape[0])
-    Testing_Dataset = UrbanSound.take(test_set_size)
-    Training_Dataset = UrbanSound.skip(test_set_size)
+    test_features = features[:test_set_size]
+    train_features = features[test_set_size:]
+    test_labels = labels[:test_set_size]
+    train_labels = labels[test_set_size:]
+    test_features, test_labels = conform_examples(np.asarray(test_features), np.asarray(test_labels), 1000, 0.5)
+    train_features, train_labels = conform_examples(np.asarray(train_features), np.asarray(train_labels), 1000, 0.5)
+    Testing_Dataset = tf.data.Dataset.from_tensor_slices((test_features, test_labels))
+    Training_Dataset = tf.data.Dataset.from_tensor_slices((train_features, train_labels))
     return Training_Dataset, Testing_Dataset
 
 
 def conform_examples(X_list: [np.ndarray], y_original: np.ndarray, window_size: int, crossover: float):
-    assert len(X_list) == y_original.size
+    assert len(X_list) == len(y_original)
 
     X = []
     y = []
@@ -110,3 +110,6 @@ class room_distribution(object):
         room.sources[0].add_signal(x)
         room.simulate()
         return room.mic_array.signals[1, :]
+
+
+A, b = import_dataset()
