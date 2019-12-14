@@ -27,8 +27,29 @@ def import_dataset():
     Training_Dataset = tf.data.Dataset.from_tensor_slices((train_features, train_labels))
     return Training_Dataset, Testing_Dataset
 
-def import_augmented_data():
-    pass
+def import_augmented_data(augmentation_precent: float, noise_mean: float, noise_stddev: float, num_rooms: int):
+    with open('..\\data\\UrbanSound_sr16000', 'rb') as fp:
+        itemlist = pickle.load(fp)
+    labels = itemlist.pop('class_label')
+    le = LabelEncoder()
+    labels = le.fit_transform(labels)
+    labels = tf.one_hot(labels, 10)
+    features = itemlist.pop('audio')
+    nd = noise_distribution(noise_mean, noise_stddev)
+    rd = room_distribution(num_rooms)
+    test_set_size = int(0.2 * features.shape[0])
+    test_features = features[:test_set_size]
+    train_features = features[test_set_size:]
+    test_labels = labels[:test_set_size]
+    train_labels = labels[test_set_size:]
+    for f in [rd.augment, nd.augment]:
+        test_features.map(lambda x: tf.cond(tf.random_uniform([], 0, 1) > (1-augmentation_precent), lambda: f(x), lambda: x))
+        train_features.map(lambda x: tf.cond(tf.random_uniform([], 0, 1) > (1-augmentation_precent), lambda: f(x), lambda: x))
+    test_features, test_labels = conform_examples(list(test_features), test_labels, 50999, 0.5)
+    train_features, train_labels = conform_examples(list(train_features), train_labels, 50999, 0.5)
+    Testing_Dataset = tf.data.Dataset.from_tensor_slices((test_features, test_labels))
+    Training_Dataset = tf.data.Dataset.from_tensor_slices((train_features, train_labels))
+    return Training_Dataset, Testing_Dataset
 
 
 def conform_examples(X_list: [np.ndarray], y_original: np.ndarray, window_size: int, crossover: float):
