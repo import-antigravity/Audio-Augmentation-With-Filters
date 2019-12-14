@@ -1,8 +1,8 @@
 import numpy as np
 
 
-def conform_examples(X_list: [np.ndarray], y: np.ndarray, window_size: int, crossover: float):
-    assert len(X_list) == y.size
+def conform_examples(X_list: [np.ndarray], y_original: np.ndarray, window_size: int, crossover: float):
+    assert len(X_list) == y_original.size
 
     X = []
     y = []
@@ -13,7 +13,7 @@ def conform_examples(X_list: [np.ndarray], y: np.ndarray, window_size: int, cros
             zeros = np.zeros(window_size - sample.size)
             padded = np.concatenate((sample, zeros))
             X.append(padded)
-            y.append(y[i])
+            y.append(y_original[i])
         else:
             current_start = 0
             while current_start < sample.size:
@@ -22,7 +22,7 @@ def conform_examples(X_list: [np.ndarray], y: np.ndarray, window_size: int, cros
                     zeros = np.zeros(current_start + window_size - sample.size)
                 padded = np.concatenate((sample[current_start:current_start + window_size], zeros))
                 X.append(padded)
-                y.append(y[i])
+                y.append(y_original[i])
                 current_start += int((1. - crossover) * window_size)
 
     return np.vstack(X), np.vstack(y)
