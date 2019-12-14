@@ -7,7 +7,7 @@ import pyroomacoustics as pra
 
 
 def import_dataset():
-    with open('..\\data\\UrbanSound8KDataFrame', 'rb') as fp:
+    with open('..\\data\\UrbanSound_sr16000', 'rb') as fp:
         itemlist = pickle.load(fp)
     print(itemlist.columns)
     labels = itemlist.pop('class_label')
@@ -21,11 +21,14 @@ def import_dataset():
     train_features = features[test_set_size:]
     test_labels = labels[:test_set_size]
     train_labels = labels[test_set_size:]
-    test_features, test_labels = conform_examples(np.asarray(test_features), np.asarray(test_labels), 1000, 0.5)
-    train_features, train_labels = conform_examples(np.asarray(train_features), np.asarray(train_labels), 1000, 0.5)
+    test_features, test_labels = conform_examples(list(test_features), test_labels, 50999, 0.5)
+    train_features, train_labels = conform_examples(list(train_features), train_labels, 50999, 0.5)
     Testing_Dataset = tf.data.Dataset.from_tensor_slices((test_features, test_labels))
     Training_Dataset = tf.data.Dataset.from_tensor_slices((train_features, train_labels))
     return Training_Dataset, Testing_Dataset
+
+def import_augmented_data():
+    pass
 
 
 def conform_examples(X_list: [np.ndarray], y_original: np.ndarray, window_size: int, crossover: float):
@@ -91,6 +94,7 @@ class room_distribution(object):
         return pra.SoundSource(position=d)
 
     def sample_mic(self, room: pra.Room):
+
         pass
 
     # returns a room populated with a source and microphone array, drawn from the random distributions
