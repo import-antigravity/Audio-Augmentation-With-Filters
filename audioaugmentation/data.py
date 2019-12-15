@@ -34,7 +34,7 @@ def import_numpy(data_path: str):
     labels = itemlist.pop('class_label')
     le = LabelEncoder()
     labels = le.fit_transform(labels)
-    labels = tf.one_hot(labels, 10)
+    labels = np.eye(10)[labels]
     features = itemlist.pop('audio')
     test_set_size = int(0.2 * features.shape[0])
     test_features = features[:test_set_size]
