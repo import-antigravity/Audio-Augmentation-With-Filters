@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 import pyroomacoustics as pra
 
 
-def import_dataset():
-    with open(f'..{os.sep}data{os.sep}UrbanSound_sr16000.dms', 'rb') as fp:
+def import_dataset(data_path: str):
+    with open(data_path + os.sep + 'UrbanSound_sr16000.dms', 'rb') as fp:
         itemlist = pickle.load(fp)
     labels = itemlist.pop('class_label')
     le = LabelEncoder()
