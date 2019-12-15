@@ -98,7 +98,6 @@ def conform_examples(X_list: [np.ndarray], y_original: np.ndarray, window_size: 
 
     return np.vstack(X), np.vstack(y)
 
-
 class noise_distribution(object):
     def __init__(self, mean, stddev):
         self.mean = mean
