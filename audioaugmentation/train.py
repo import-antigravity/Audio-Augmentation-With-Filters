@@ -8,5 +8,5 @@ def train(classifier, optimizer, epochs, batch_size):
     print(train_features.shape, train_labels.shape)
     classifier.compile(optimizer, loss=tf.keras.losses.binary_crossentropy)
     print('Training...')
-    history = classifier.fit(train_features, train_labels, batch_size=batch_size, epochs=epochs, verbose=2)
+    history = classifier.fit(train_features, train_labels, batch_size=batch_size, epochs=epochs)
     return classifier, optimizer, history
