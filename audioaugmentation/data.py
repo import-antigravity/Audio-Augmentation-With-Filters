@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import tensorflow as tf
 import pickle
@@ -8,11 +9,9 @@ import pyroomacoustics as pra
 
 
 def import_dataset():
-    with open('..\\data\\UrbanSound_sr16000', 'rb') as fp:
+    with open(f'..{os.sep}data{os.sep}UrbanSound_sr16000.dms', 'rb') as fp:
         itemlist = pickle.load(fp)
-    print(itemlist.columns)
     labels = itemlist.pop('class_label')
-    print(itemlist.columns)
     le = LabelEncoder()
     labels = le.fit_transform(labels)
     labels = tf.one_hot(labels, 10)
@@ -28,8 +27,9 @@ def import_dataset():
     Training_Dataset = tf.data.Dataset.from_tensor_slices((train_features, train_labels))
     return Training_Dataset, Testing_Dataset
 
+
 def import_augmented_data(augmentation_percent: float, noise_mean: float, noise_stddev: float, num_rooms: int):
-    with open('..\\data\\UrbanSound_sr16000', 'rb') as fp:
+    with open(f'..{os.sep}data{os.sep}UrbanSound_sr16000.dms', 'rb') as fp:
         itemlist = pickle.load(fp)
     labels = itemlist.pop('class_label')
     le = LabelEncoder()
@@ -54,30 +54,30 @@ def import_augmented_data(augmentation_percent: float, noise_mean: float, noise_
 
 
 def conform_examples(X_list: [np.ndarray], y_original: np.ndarray, window_size: int, crossover: float):
-    assert len(X_list) == len(y_original)
+    assert len(X_list) == y_original.shape[0]
 
     X = []
     y = []
 
     for i in range(len(X_list)):
-        sample = X_list[i]
-        if sample.size <= window_size:
-            zeros = np.zeros(window_size - sample.size)
-            padded = np.concatenate((sample, zeros))
+        sample = tf.cast(X_list[i], 'float32')
+        if sample.shape[0] <= window_size:
+            zeros = tf.zeros(window_size - sample.shape[0])
+            padded = tf.concat((sample, zeros), axis=0)
             X.append(padded)
             y.append(y_original[i])
         else:
             current_start = 0
-            while current_start < sample.size:
-                zeros = np.array([])
-                if current_start + window_size > sample.size:
-                    zeros = np.zeros(current_start + window_size - sample.size)
-                padded = np.concatenate((sample[current_start:current_start + window_size], zeros))
+            while current_start < sample.shape[0]:
+                zeros = tf.zeros(0)
+                if current_start + window_size > sample.shape[0]:
+                    zeros = tf.zeros(current_start + window_size - sample.shape[0])
+                padded = tf.concat((sample[current_start:current_start + window_size], zeros), axis=0)
                 X.append(padded)
                 y.append(y_original[i])
                 current_start += int((1. - crossover) * window_size)
 
-    return np.vstack(X), np.vstack(y)
+    return tf.stack(X, axis=0), tf.stack(y, axis=0)
 
 
 class noise_distribution(object):
@@ -144,8 +144,9 @@ class room_distribution(object):
         return room.mic_array.signals[1, :]
 
 
-print(np.array([2.4238, 4.43235]))
-rd = room_distribution(100)
-s = rd.sample()
-s.plot()
-plt.show()
+if __name__ == "__main__":
+    print(np.array([2.4238, 4.43235]))
+    rd = room_distribution(100)
+    s = rd.sample()
+    s.plot()
+    plt.show()
