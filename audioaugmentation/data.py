@@ -72,30 +72,31 @@ def import_augmented_data(augmentation_percent: float, noise_mean: float, noise_
 
 
 def conform_examples(X_list: [np.ndarray], y_original: np.ndarray, window_size: int, crossover: float):
+    # INPUT MUST BE NUMPY ARRAYS, THERE IS NO POINT IN CONVERTING TO TENSORS BEFORE CALLING THIS METHOD
     assert len(X_list) == y_original.shape[0]
 
     X = []
     y = []
 
     for i in range(len(X_list)):
-        sample = tf.cast(X_list[i], 'float32')
+        sample = X_list[i].astype('float32')
         if sample.shape[0] <= window_size:
-            zeros = tf.zeros(window_size - sample.shape[0])
-            padded = tf.concat((sample, zeros), axis=0)
+            zeros = np.zeros(window_size - sample.shape[0])
+            padded = np.concatenate((sample, zeros))
             X.append(padded)
             y.append(y_original[i])
         else:
             current_start = 0
             while current_start < sample.shape[0]:
-                zeros = tf.zeros(0)
+                zeros = np.zeros(0)
                 if current_start + window_size > sample.shape[0]:
-                    zeros = tf.zeros(current_start + window_size - sample.shape[0])
-                padded = tf.concat((sample[current_start:current_start + window_size], zeros), axis=0)
+                    zeros = np.zeros(current_start + window_size - sample.shape[0])
+                padded = np.concatenate((sample[current_start:current_start + window_size], zeros))
                 X.append(padded)
                 y.append(y_original[i])
                 current_start += int((1. - crossover) * window_size)
 
-    return tf.stack(X, axis=0), tf.stack(y, axis=0)
+    return np.vstack(X), np.vstack(y)
 
 
 class noise_distribution(object):
