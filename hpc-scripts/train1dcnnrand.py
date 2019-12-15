@@ -1,3 +1,6 @@
+import sys
+sys.path.append('..')
+
 import tensorflow as tf
 
 from audioaugmentation.models import cnn_rand
