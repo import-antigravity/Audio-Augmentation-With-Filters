@@ -28,6 +28,24 @@ def import_dataset(data_path: str):
     return Training_Dataset, Testing_Dataset
 
 
+def import_numpy(data_path: str):
+    with open(data_path + os.sep + 'UrbanSound_sr16000.dms', 'rb') as fp:
+        itemlist = pickle.load(fp)
+    labels = itemlist.pop('class_label')
+    le = LabelEncoder()
+    labels = le.fit_transform(labels)
+    labels = tf.one_hot(labels, 10)
+    features = itemlist.pop('audio')
+    test_set_size = int(0.2 * features.shape[0])
+    test_features = features[:test_set_size]
+    train_features = features[test_set_size:]
+    test_labels = labels[:test_set_size]
+    train_labels = labels[test_set_size:]
+    test_features, test_labels = conform_examples(list(test_features), test_labels, 50999, 0.5)
+    train_features, train_labels = conform_examples(list(train_features), train_labels, 50999, 0.5)
+    return test_features, test_labels, train_features, train_labels
+
+
 def import_augmented_data(augmentation_percent: float, noise_mean: float, noise_stddev: float, num_rooms: int):
     with open(f'..{os.sep}data{os.sep}UrbanSound_sr16000.dms', 'rb') as fp:
         itemlist = pickle.load(fp)

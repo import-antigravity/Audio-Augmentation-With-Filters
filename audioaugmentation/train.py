@@ -1,12 +1,11 @@
 import tensorflow as tf
-from audioaugmentation.data import import_dataset
+from audioaugmentation.data import import_numpy
 
 
 def train(classifier, optimizer, epochs, batch_size):
     print('Loading dataset')
-    train, test = import_dataset()
-    batched = train.batch(batch_size)
+    test_features, test_labels, train_features, train_labels = import_numpy('../data')
     classifier.compile(optimizer, loss=tf.keras.losses.binary_crossentropy)
     print('Training...')
-    history = classifier.fit(batched, epochs=epochs, verbose=2)
-    return classifier, optimizer, history, train, test
+    history = classifier.fit(test_features, test_labels, batch_size=batch_size, epochs=epochs, verbose=2)
+    return classifier, optimizer, history
