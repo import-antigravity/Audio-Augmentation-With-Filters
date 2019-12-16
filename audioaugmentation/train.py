@@ -1,9 +1,12 @@
+import os
+
 import tensorflow as tf
 
 from audioaugmentation.data import import_clean_data
 
 
 def train(classifier, optimizer, epochs, batch_size, path, feature_size, num_gpus):
+    os.makedirs(path)
     print('Loading dataset')
     test_features, test_labels, train_features, train_labels = import_clean_data('../data/', feature_size)
     print('Dataset:', train_features.shape, train_labels.shape)

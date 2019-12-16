@@ -1,5 +1,4 @@
 import sys
-sys.path.append('..')
 
 import tensorflow as tf
 
@@ -16,4 +15,4 @@ classifier, optimizer, history = train(model,
                                        batch_size=10,
                                        path='../models/1DCNNRand32k/',
                                        feature_size=32000,
-                                       num_gpus=2)
+                                       num_gpus=int(sys.argv[1]))

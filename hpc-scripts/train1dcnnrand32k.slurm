@@ -9,4 +9,4 @@ module load python/3.6.6
 module load cuda/9.0
 
 cd ~/Audio-Augmentation-With-Filters/hpc-scripts
-python train1dcnnrand.py
+python train1dcnnrand.py 2
