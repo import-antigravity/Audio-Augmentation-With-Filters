@@ -3,7 +3,7 @@ import tensorflow as tf
 
 def cnn_rand():
     cnn = [
-        tf.keras.Input(shape=50999),
+        tf.keras.layers.InputLayer(input_shape=(50999,)),
         tf.keras.layers.Reshape((50999, 1)),
         tf.keras.layers.Conv1D(16, 64, strides=2, activation='relu'),
         tf.keras.layers.BatchNormalization(),
