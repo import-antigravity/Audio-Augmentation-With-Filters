@@ -16,13 +16,18 @@ def import_dataset(data_path: str):
     labels = le.fit_transform(labels)
     labels = tf.one_hot(labels, 10)
     features = itemlist.pop('audio')
-    test_set_size = int(0.2 * features.shape[0])
-    test_features = features[:test_set_size]
-    train_features = features[test_set_size:]
-    test_labels = labels[:test_set_size]
-    train_labels = labels[test_set_size:]
-    test_features, test_labels = conform_examples(list(test_features), test_labels, 50999, 0.5)
-    train_features, train_labels = conform_examples(list(train_features), train_labels, 50999, 0.5)
+    data_folds = []
+	label_folds = []
+    for i in range(10):
+    	fold_features = features[np.where(folds == i + 1)[0]]
+    	fold_labels = labels[np.where(folds == i + 1)[0]]
+    	fold_features, fold_labels = conform_examples(fold_features, fold_labels, 50999, 0.5)
+    	data_folds.append(fold_features)
+    	label_folds.append(fold_labels)
+    test_features = data_folds[-1]
+    train_features = data_folds[:-1]
+    test_labels = label_folds[-1]
+    train_labels = label_folds[:-1]
     Testing_Dataset = tf.data.Dataset.from_tensor_slices((test_features, test_labels))
     Training_Dataset = tf.data.Dataset.from_tensor_slices((train_features, train_labels))
     return Training_Dataset, Testing_Dataset
@@ -36,13 +41,18 @@ def import_numpy(data_path: str, feature_size: int):
     labels = le.fit_transform(labels)
     labels = np.eye(10)[labels]
     features = itemlist.pop('audio')
-    test_set_size = int(0.2 * features.shape[0])
-    test_features = features[:test_set_size]
-    train_features = features[test_set_size:]
-    test_labels = labels[:test_set_size]
-    train_labels = labels[test_set_size:]
-    test_features, test_labels = conform_examples(list(test_features), test_labels, feature_size, 0.5)
-    train_features, train_labels = conform_examples(list(train_features), train_labels, feature_size, 0.5)
+    data_folds = []
+	label_folds = []
+    for i in range(10):
+    	fold_features = features[np.where(folds == i + 1)[0]]
+    	fold_labels = labels[np.where(folds == i + 1)[0]]
+    	fold_features, fold_labels = conform_examples(fold_features, fold_labels, feature_size, 0.5)
+    	data_folds.append(fold_features)
+    	label_folds.append(fold_labels)
+    test_features = data_folds[-1]
+    train_features = data_folds[:-1]
+    test_labels = label_folds[-1]
+    train_labels = label_folds[:-1]
     return test_features, test_labels, train_features, train_labels
 
 
