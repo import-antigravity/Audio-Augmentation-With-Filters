@@ -8,8 +8,9 @@ def train(classifier, optimizer, epochs, batch_size):
     print(train_features.shape, train_labels.shape)
     classifier.compile(optimizer, loss=tf.keras.losses.binary_crossentropy)
     print('Training...')
-    checkpoint = tf.keras.callbacks.ModelCheckpoint('../models', monitor='val_loss', verbose=0, save_best_only=True,
-                                                    save_weights_only=False, mode='auto', period=1)
+    checkpoint = tf.keras.callbacks.ModelCheckpoint('../models/{epoch:02d}-{val_loss:.2f}.hdf5', monitor='val_loss',
+                                                    verbose=0, save_best_only=True, save_weights_only=False,
+                                                    mode='auto', period=1)
     csv_logger = tf.keras.callbacks.CSVLogger("../models/model_history_log.csv", append=True)
     history = classifier.fit(train_features, train_labels, validation_data=(test_features, test_labels),
                              batch_size=batch_size, epochs=epochs, callbacks=[checkpoint, csv_logger])
