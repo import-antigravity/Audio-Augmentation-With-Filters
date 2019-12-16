@@ -1,11 +1,11 @@
 import tensorflow as tf
 import os
-from audioaugmentation.data import import_numpy
+from audioaugmentation.data import import_clean_data
 
 
 def train(classifier, optimizer, epochs, batch_size, path, feature_size):
     print('Loading dataset')
-    test_features, test_labels, train_features, train_labels = import_numpy('../data/', feature_size)
+    test_features, test_labels, train_features, train_labels = import_clean_data('../data/', feature_size)
     print(train_features.shape, train_labels.shape)
     classifier.compile(optimizer, loss=tf.keras.losses.mean_squared_logarithmic_error)
     print('Training...')

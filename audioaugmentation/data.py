@@ -8,33 +8,7 @@ import matplotlib.pyplot as plt
 import pyroomacoustics as pra
 
 
-def import_dataset(data_path: str):
-    with open(data_path + os.sep + 'UrbanSound_sr16000.dms', 'rb') as fp:
-        itemlist = pickle.load(fp)
-    labels = itemlist.pop('class_label')
-    le = LabelEncoder()
-    labels = le.fit_transform(labels)
-    labels = tf.one_hot(labels, 10)
-    features = itemlist.pop('audio')
-    folds = itemlist.pop('fold')
-    data_folds = []
-    label_folds = []
-    for i in range(10):
-        fold_features = features[np.where(folds == i + 1)[0]]
-        fold_labels = labels[np.where(folds == i + 1)[0]]
-        fold_features, fold_labels = conform_examples(fold_features, fold_labels, 50999, 0.5)
-        data_folds.append(fold_features)
-        label_folds.append(fold_labels)
-    test_features = data_folds[-1]
-    train_features = data_folds[:-1]
-    test_labels = label_folds[-1]
-    train_labels = label_folds[:-1]
-    Testing_Dataset = tf.data.Dataset.from_tensor_slices((test_features, test_labels))
-    Training_Dataset = tf.data.Dataset.from_tensor_slices((train_features, train_labels))
-    return Training_Dataset, Testing_Dataset
-
-
-def import_numpy(data_path: str, feature_size: int):
+def import_clean_data(data_path: str, feature_size: int):
     with open(data_path + os.sep + 'UrbanSound_sr16000.dms', 'rb') as fp:
         itemlist = pickle.load(fp)
     labels = itemlist.pop('class_label')
@@ -56,6 +30,7 @@ def import_numpy(data_path: str, feature_size: int):
     test_labels = label_folds[-1]
     train_labels = label_folds[:-1]
     return test_features, test_labels, train_features, train_labels
+
 
 def import_augmented_data(augmentation_percent: float, noise_mean: float, noise_stddev: float, num_rooms: int):
     with open(f'..{os.sep}data{os.sep}UrbanSound_sr16000.dms', 'rb') as fp:
@@ -84,6 +59,7 @@ def import_augmented_data(augmentation_percent: float, noise_mean: float, noise_
 
 def conform_examples(X_list: [np.ndarray], y_original: np.ndarray, window_size: int, crossover: float):
     # INPUT MUST BE NUMPY ARRAYS, THERE IS NO POINT IN CONVERTING TO TENSORS BEFORE CALLING THIS METHOD
+    print(X_list, y_original)
     assert len(X_list) == y_original.shape[0]
 
     X = []
