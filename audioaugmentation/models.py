@@ -11,6 +11,8 @@ def cnn_rand():
         tf.keras.layers.Conv1D(32, 32, strides=2, activation='relu'),
         tf.keras.layers.BatchNormalization(),
         tf.keras.layers.MaxPool1D(pool_size=8, strides=8),
+        tf.keras.layers.Conv1D(64, 16, strides=2, activation='relu'),
+        tf.keras.layers.BatchNormalization(),
         tf.keras.layers.Conv1D(128, 8, strides=2, activation='relu'),
         tf.keras.layers.BatchNormalization(),
         tf.keras.layers.Conv1D(256, 4, strides=2, activation='relu'),

@@ -10,5 +10,10 @@ model = cnn_rand()
 
 print(model.summary())
 
-classifier, optimizer, history = train(model, tf.keras.optimizers.Adam(1e-3), 1000, 10, '../models/1DCNNRand32k/',
-                                       32000)
+classifier, optimizer, history = train(model,
+                                       optimizer=tf.keras.optimizers.Adam(1e-3),
+                                       epochs=1000,
+                                       batch_size=10,
+                                       path='../models/1DCNNRand32k/',
+                                       feature_size=32000,
+                                       num_gpus=2)
