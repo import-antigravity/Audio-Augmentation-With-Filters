@@ -2,7 +2,6 @@ import sys
 sys.path.append('..')
 
 import tensorflow as tf
-import pickle
 
 from audioaugmentation.models import cnn_rand
 from audioaugmentation.train import train

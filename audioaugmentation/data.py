@@ -16,14 +16,15 @@ def import_dataset(data_path: str):
     labels = le.fit_transform(labels)
     labels = tf.one_hot(labels, 10)
     features = itemlist.pop('audio')
+    folds = itemlist.pop('fold')
     data_folds = []
-	label_folds = []
+    label_folds = []
     for i in range(10):
-    	fold_features = features[np.where(folds == i + 1)[0]]
-    	fold_labels = labels[np.where(folds == i + 1)[0]]
-    	fold_features, fold_labels = conform_examples(fold_features, fold_labels, 50999, 0.5)
-    	data_folds.append(fold_features)
-    	label_folds.append(fold_labels)
+        fold_features = features[np.where(folds == i + 1)[0]]
+        fold_labels = labels[np.where(folds == i + 1)[0]]
+        fold_features, fold_labels = conform_examples(fold_features, fold_labels, 50999, 0.5)
+        data_folds.append(fold_features)
+        label_folds.append(fold_labels)
     test_features = data_folds[-1]
     train_features = data_folds[:-1]
     test_labels = label_folds[-1]
@@ -43,13 +44,13 @@ def import_numpy(data_path: str, feature_size: int):
     features = itemlist.pop('audio')
     folds = itemlist.pop('fold')
     data_folds = []
-	label_folds = []
+    label_folds = []
     for i in range(10):
-    	fold_features = features[np.where(folds == i + 1)[0]]
-    	fold_labels = labels[np.where(folds == i + 1)[0]]
-    	fold_features, fold_labels = conform_examples(fold_features, fold_labels, feature_size, 0.5)
-    	data_folds.append(fold_features)
-    	label_folds.append(fold_labels)
+        fold_features = features[np.where(folds == i + 1)[0]]
+        fold_labels = labels[np.where(folds == i + 1)[0]]
+        fold_features, fold_labels = conform_examples(fold_features, fold_labels, feature_size, 0.5)
+        data_folds.append(fold_features)
+        label_folds.append(fold_labels)
     test_features = data_folds[-1]
     train_features = data_folds[:-1]
     test_labels = label_folds[-1]
