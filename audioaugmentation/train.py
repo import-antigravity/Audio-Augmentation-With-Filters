@@ -5,7 +5,6 @@ from audioaugmentation.data import import_numpy
 
 def train(classifier, optimizer, epochs, batch_size, path, feature_size):
     print('Loading dataset')
-    os.mkdir(path[:-1])
     test_features, test_labels, train_features, train_labels = import_numpy('../data/', feature_size)
     print(train_features.shape, train_labels.shape)
     classifier.compile(optimizer, loss=tf.keras.losses.binary_crossentropy)
