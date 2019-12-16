@@ -18,7 +18,9 @@ def cnn_rand():
         tf.keras.layers.MaxPool1D(pool_size=4, strides=4),
         tf.keras.layers.Flatten(),
         tf.keras.layers.Dense(128, activation='relu'),
+        tf.keras.layers.Dropout(0.25),
         tf.keras.layers.Dense(64, activation='relu'),
+        tf.keras.layers.Dropout(0.25),
         tf.keras.layers.Dense(10, activation='softmax'),
     ]
 

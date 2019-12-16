@@ -7,7 +7,7 @@ def train(classifier, optimizer, epochs, batch_size, path, feature_size):
     print('Loading dataset')
     test_features, test_labels, train_features, train_labels = import_numpy('../data/', feature_size)
     print(train_features.shape, train_labels.shape)
-    classifier.compile(optimizer, loss=tf.keras.losses.binary_crossentropy)
+    classifier.compile(optimizer, loss=tf.keras.losses.mean_squared_logarithmic_error)
     print('Training...')
     reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(min_lr=1e-8)
     checkpoint = tf.keras.callbacks.ModelCheckpoint(path + '{epoch:02d}-{val_loss:.2f}.hdf5',
