@@ -1,11 +1,11 @@
 import os
-import numpy as np
-import tensorflow as tf
 import pickle
-import pandas
-from sklearn.preprocessing import LabelEncoder
+
 import matplotlib.pyplot as plt
+import numpy as np
 import pyroomacoustics as pra
+import tensorflow as tf
+from sklearn.preprocessing import LabelEncoder
 
 
 def import_clean_data(data_path: str, feature_size: int):
@@ -20,15 +20,15 @@ def import_clean_data(data_path: str, feature_size: int):
     data_folds = []
     label_folds = []
     for i in range(10):
-        fold_features = features[np.where(folds == i + 1)[0]]
+        fold_features = features[np.where(folds == i + 1)[0]].to_numpy()
         fold_labels = labels[np.where(folds == i + 1)[0]]
         fold_features, fold_labels = conform_examples(fold_features, fold_labels, feature_size, 0.5)
         data_folds.append(fold_features)
         label_folds.append(fold_labels)
     test_features = data_folds[-1]
-    train_features = data_folds[:-1]
+    train_features = np.concatenate(data_folds[:-1])
     test_labels = label_folds[-1]
-    train_labels = label_folds[:-1]
+    train_labels = np.concatenate(label_folds[:-1])
     return test_features, test_labels, train_features, train_labels
 
 
@@ -48,8 +48,10 @@ def import_augmented_data(augmentation_percent: float, noise_mean: float, noise_
     test_labels = labels[:test_set_size]
     train_labels = labels[test_set_size:]
     for f in [rd.augment, nd.augment]:
-        test_features.map(lambda x: tf.cond(tf.random_uniform([], 0, 1) > (1 - augmentation_percent), lambda: f(x), lambda: x))
-        train_features.map(lambda x: tf.cond(tf.random_uniform([], 0, 1) > (1 - augmentation_percent), lambda: f(x), lambda: x))
+        test_features.map(
+            lambda x: tf.cond(tf.random_uniform([], 0, 1) > (1 - augmentation_percent), lambda: f(x), lambda: x))
+        train_features.map(
+            lambda x: tf.cond(tf.random_uniform([], 0, 1) > (1 - augmentation_percent), lambda: f(x), lambda: x))
     test_features, test_labels = conform_examples(list(test_features), test_labels, 50999, 0.5)
     train_features, train_labels = conform_examples(list(train_features), train_labels, 50999, 0.5)
     Testing_Dataset = tf.data.Dataset.from_tensor_slices((test_features, test_labels))
@@ -59,7 +61,6 @@ def import_augmented_data(augmentation_percent: float, noise_mean: float, noise_
 
 def conform_examples(X_list: [np.ndarray], y_original: np.ndarray, window_size: int, crossover: float):
     # INPUT MUST BE NUMPY ARRAYS, THERE IS NO POINT IN CONVERTING TO TENSORS BEFORE CALLING THIS METHOD
-    print(X_list, y_original)
     assert len(X_list) == y_original.shape[0]
 
     X = []
@@ -84,6 +85,7 @@ def conform_examples(X_list: [np.ndarray], y_original: np.ndarray, window_size: 
                 current_start += int((1. - crossover) * window_size)
 
     return np.vstack(X), np.vstack(y)
+
 
 class noise_distribution(object):
     def __init__(self, mean, stddev):
@@ -117,7 +119,7 @@ class room_distribution(object):
         d = []
         d.append(x_pos)
         d.append(y_pos)
-        #d = np.asarray(d)
+        # d = np.asarray(d)
         return d
 
     @staticmethod
