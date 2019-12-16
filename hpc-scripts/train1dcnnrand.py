@@ -11,7 +11,5 @@ model = cnn_rand()
 
 print(model.summary())
 
-classifier, optimizer, history = train(model, tf.keras.optimizers.Adam(1e-3), 1000, 10, '../models/')
-
-pickle.dump(classifier, '1dcnnrand')
-pickle.dump(history, 'history')
+classifier, optimizer, history = train(model, tf.keras.optimizers.Adam(1e-3), 1000, 10, '../models/1DCNNRand32k/',
+                                       32000)

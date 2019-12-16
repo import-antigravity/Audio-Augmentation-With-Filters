@@ -28,7 +28,7 @@ def import_dataset(data_path: str):
     return Training_Dataset, Testing_Dataset
 
 
-def import_numpy(data_path: str):
+def import_numpy(data_path: str, feature_size: int):
     with open(data_path + os.sep + 'UrbanSound_sr16000.dms', 'rb') as fp:
         itemlist = pickle.load(fp)
     labels = itemlist.pop('class_label')
@@ -41,8 +41,8 @@ def import_numpy(data_path: str):
     train_features = features[test_set_size:]
     test_labels = labels[:test_set_size]
     train_labels = labels[test_set_size:]
-    test_features, test_labels = conform_examples(list(test_features), test_labels, 50999, 0.5)
-    train_features, train_labels = conform_examples(list(train_features), train_labels, 50999, 0.5)
+    test_features, test_labels = conform_examples(list(test_features), test_labels, feature_size, 0.5)
+    train_features, train_labels = conform_examples(list(train_features), train_labels, feature_size, 0.5)
     return test_features, test_labels, train_features, train_labels
 
 
