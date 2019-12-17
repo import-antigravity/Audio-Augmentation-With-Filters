@@ -2,7 +2,7 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=2
 #SBATCH --time=05:00:00 --mem=16gb
-#SBATCH -p gpu -C gpup100 --gres=gpu:2
+#SBATCH -p gpu -C gpu2080 --gres=gpu:2
 #SBATCH --mail-user=grd27@case.edu
 #SBATCH --output=~/clean.txt
 
