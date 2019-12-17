@@ -2,9 +2,12 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=16gb
+#SBATCH --time=0-02:00:00
 #SBATCH -p gpu -C gpu2080 --gres=gpu:2
 #SBATCH --mail-user=grd27@case.edu
-#SBATCH --output=~/clean.txt
+#SBATCH --mail-type=ALL
+#SBATCH --output=clean.txt
+#SBATCH --job-name="train1dcnn_clean"
 
 echo "Loading modules..."
 
