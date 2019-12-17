@@ -15,6 +15,8 @@ module swap intel gcc
 module load python/3.6.6
 module load cuda/9.0
 
+export PYTHONPATH="${PYTHONPATH}:~/Audio-Augmentation-With-Filters"
+
 cd ~/Audio-Augmentation-With-Filters/hpc-scripts
 echo "Running python script..."
 python train1dcnnrand_clean.py 2 ../models/clean
