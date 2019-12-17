@@ -2,7 +2,7 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=16gb
-#SBATCH --time=0-02:00:00
+#SBATCH --time=0-10:00:00
 #SBATCH -p gpu -C gpu2080 --gres=gpu:1
 #SBATCH --mail-user=grd27@case.edu
 #SBATCH --mail-type=ALL
