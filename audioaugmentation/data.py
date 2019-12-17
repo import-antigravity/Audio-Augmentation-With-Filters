@@ -1,15 +1,15 @@
 import os
 import pickle
 import random
+from multiprocessing.pool import Pool
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pyroomacoustics as pra
 from sklearn.preprocessing import LabelEncoder
 
 
 def data_frame_to_folds(data_path: str):
-    with open(os.path.join(data_path, 'UrbanSound_sr16000'), 'rb') as fp:
+    with open(os.path.join(data_path, 'UrbanSound_sr16000.dms'), 'rb') as fp:
         itemlist = pickle.load(fp)
     labels = itemlist.pop('class_label')
     le = LabelEncoder()
@@ -57,16 +57,34 @@ def import_augmented_data(data_path: str, feature_size: int, augmentation_factor
     # Augment
     nd = noise_distribution(noise_mean, noise_stddev)
     rd = room_distribution(num_rooms)
+    irs = rd.make_irs(num_rooms)
 
     new_features = []
-    new_labels = []
+    new_labels = None
 
     print("Applying augmentation:")
     for i in range(augmentation_factor - 1):
-        for j, clip in enumerate(train_features):
-            transformed = nd.augment(rd.augment(clip))
-            new_features.append(transformed)
-            new_labels.append(train_labels[j])
+        print(f"  pass {i + 1}...")
+        # Generate IRs
+        print("Generating IRs")
+        ir_for_example = []
+        for _ in train_features:
+            ir_for_example.append(random.choice(irs))
+        print('Convolving')
+        with Pool() as p:
+            augmented = p.starmap(np.convolve, zip(train_features, ir_for_example))
+
+        new_features += augmented
+        if new_labels is not None:
+            new_labels = np.concatenate((new_labels, train_labels))
+        else:
+            new_labels = train_labels.copy()
+    '''
+    # Listen to 10 random samples
+    for _ in range(10):
+        clip = random.choice(new_features)
+        sd.play(clip, 16000, blocking=True)
+    '''
 
     train_features += new_features
     train_labels = np.concatenate((train_labels, np.array(new_labels)))
@@ -124,7 +142,7 @@ class room_distribution(object):
         self.rooms = []
         # TODO: create a distribution of PRA rooms
         for i in range(num_rooms):
-            dims = np.random.randint(low=1, high=10, size=2)
+            dims = np.random.randint(low=1, high=20, size=2)
             self.rooms.append(dims)
 
     @staticmethod
@@ -158,21 +176,35 @@ class room_distribution(object):
     def sample(self):
         # TODO: add a random source and microphone to a random room, then return
         dims = random.choice(self.rooms)
-        room = pra.ShoeBox(dims, fs=16000)
+        absorption = np.clip(np.random.normal(0.4, size=1), 1e-2, 0.9)[0]
+        room = pra.ShoeBox(dims, fs=16000, absorption=absorption, max_order=40)
         source = room_distribution.sample_source(room)
         mic = room_distribution.sample_mic(room)
         room.add_source(source)
         room.add_microphone_array(mic)
         return room
 
+    def make_irs(self, num_irs: int):
+        irs = []
+        for i in range(num_irs):
+            room = self.sample()
+            room.compute_rir()
+            ir = room.rir[0][0]
+            irs.append(ir)
+            # sd.play(ir / np.abs(ir.max()), 16000, blocking=True)
+        return irs
+
+    '''
     def augment(self, x: np.ndarray) -> np.ndarray:
         room = self.sample()
         room.sources[0].add_signal(x)
         room.compute_rir()
         ir = room.rir[0][0]
         signal = np.convolve(x, ir)
+        signal /= np.abs(signal.max())
+        signal /= 2
+        sd.play(x, 16000, blocking=True)
+        sd.play(ir, 16000, blocking=True)
+        sd.play(signal, 16000, blocking=True)
         return signal
-
-
-if __name__ == "__main__":
-    a, b, c, d = import_augmented_data("..\\data", 50999, 3, 0, 1, 100)
+    '''

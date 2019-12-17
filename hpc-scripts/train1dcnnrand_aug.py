@@ -10,7 +10,7 @@ model = cnn_rand()
 
 print(model.summary())
 
-data = import_augmented_data('../data', 32000, 2, 0., 0., 100)
+data = import_augmented_data('../data', 32000, int(sys.argv[3]), 0., 0., 100)
 
 classifier, optimizer, history = train(data, model,
                                        optimizer=tf.keras.optimizers.Adam(1e-3),
