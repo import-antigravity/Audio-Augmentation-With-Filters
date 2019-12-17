@@ -105,7 +105,6 @@ def conform_examples(X_list: [np.ndarray], y_original: np.ndarray, window_size: 
 
     for i in range(len(X_list)):
         sample = X_list[i].astype('float32')
-        print(np.abs(sample).max())
         sample = sample / np.abs(sample).max()  # Normalize samples
         if sample.shape[0] <= window_size:
             zeros = np.zeros(window_size - sample.shape[0])
