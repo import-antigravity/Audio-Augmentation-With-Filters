@@ -1,7 +1,6 @@
 import os
 import pickle
 import random
-from multiprocessing.pool import Pool
 
 import numpy as np
 import pyroomacoustics as pra
@@ -66,13 +65,18 @@ def import_augmented_data(data_path: str, feature_size: int, augmentation_factor
     for i in range(augmentation_factor - 1):
         print(f"  pass {i + 1}...")
         # Generate IRs
-        print("Generating IRs")
+        print("    Generating IRs")
         ir_for_example = []
         for _ in train_features:
             ir_for_example.append(random.choice(irs))
-        print('Convolving')
-        with Pool() as p:
-            augmented = p.starmap(np.convolve, zip(train_features, ir_for_example))
+        print('    Convolving')
+        augmented = []
+        i = 0
+        for x, ir in zip(train_features, ir_for_example):
+            augmented.append(np.convolve(x, ir))
+            i += 1
+            if i % 1000 == 0:
+                print('   ', i, len(train_features))
 
         new_features += augmented
         if new_labels is not None:
@@ -83,11 +87,11 @@ def import_augmented_data(data_path: str, feature_size: int, augmentation_factor
     # Listen to 10 random samples
     for _ in range(10):
         clip = random.choice(new_features)
-        sd.play(clip, 16000, blocking=True)
+        sd.play(clip / np.abs(clip.max()), 16000, blocking=True)
     '''
 
     train_features += new_features
-    train_labels = np.concatenate((train_labels, np.array(new_labels)))
+    train_labels = np.concatenate((train_labels, new_labels))
 
     # Conform
     train_features, train_labels = conform_examples(train_features, train_labels, feature_size, crossover)
@@ -105,7 +109,6 @@ def conform_examples(X_list: [np.ndarray], y_original: np.ndarray, window_size: 
 
     for i in range(len(X_list)):
         sample = X_list[i].astype('float32')
-        sample = sample / np.abs(sample).max()  # Normalize samples
         if sample.shape[0] <= window_size:
             zeros = np.zeros(window_size - sample.shape[0])
             padded = np.concatenate((sample, zeros))
@@ -175,7 +178,7 @@ class room_distribution(object):
     def sample(self):
         # TODO: add a random source and microphone to a random room, then return
         dims = random.choice(self.rooms)
-        absorption = np.clip(np.random.normal(0.4, size=1), 1e-2, 0.9)[0]
+        absorption = np.clip(np.random.normal(0.3, size=1), 1e-2, 0.9)[0]
         room = pra.ShoeBox(dims, fs=16000, absorption=absorption, max_order=40)
         source = room_distribution.sample_source(room)
         mic = room_distribution.sample_mic(room)
