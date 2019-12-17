@@ -66,13 +66,13 @@ def import_augmented_data(data_path: str, feature_size: int, augmentation_factor
         print(f"  pass {i + 1}...")
 
         # Generate IRs
-        print("    Generating IRs")
+        print("    Generating IRs", end='')
         ir_for_example = []
         j = 0
         for _ in train_features:
             ir_for_example.append(random.choice(irs))
             j += 1
-            if j % 100 == 0:
+            if j % 250 == 0:
                 print('.', end='')
         print()
 
@@ -83,7 +83,7 @@ def import_augmented_data(data_path: str, feature_size: int, augmentation_factor
         for x, ir in zip(train_features, ir_for_example):
             augmented.append(np.convolve(x, ir))
             j += 1
-            if j % 100 == 0:
+            if j % 250 == 0:
                 print('.', end='')
         print()
 
