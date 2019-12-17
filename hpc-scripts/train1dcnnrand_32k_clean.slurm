@@ -7,7 +7,7 @@
 #SBATCH --mail-user=grd27@case.edu
 #SBATCH --mail-type=ALL
 #SBATCH --output=clean.txt
-#SBATCH --job-name="train1dcnn_clean"
+#SBATCH --job-name="clean"
 
 echo "Loading modules..."
 

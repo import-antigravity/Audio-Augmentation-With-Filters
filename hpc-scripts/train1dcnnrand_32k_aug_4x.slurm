@@ -7,7 +7,7 @@
 #SBATCH --mail-user=grd27@case.edu
 #SBATCH --mail-type=ALL
 #SBATCH --output=aug_4x.txt
-#SBATCH --job-name="train1dcnn_aug_4x"
+#SBATCH --job-name="aug_4x"
 
 echo "Loading modules..."
 
