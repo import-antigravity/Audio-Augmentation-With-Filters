@@ -1,9 +1,10 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=2
-#SBATCH --time=00:10:00 --mem=32gb
+#SBATCH --time=05:00:00 --mem=32gb
 #SBATCH -p gpu -C gpup100 --gres=gpu:2
 #SBATCH --mail-user=grd27@case.edu
+#SBATCH --output=~/aug_3x.txt
 
 module swap intel gcc
 module load python/3.6.6
