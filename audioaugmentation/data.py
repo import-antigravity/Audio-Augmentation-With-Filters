@@ -64,19 +64,28 @@ def import_augmented_data(data_path: str, feature_size: int, augmentation_factor
     print("Applying augmentation:")
     for i in range(augmentation_factor - 1):
         print(f"  pass {i + 1}...")
+
         # Generate IRs
         print("    Generating IRs")
         ir_for_example = []
+        j = 0
         for _ in train_features:
             ir_for_example.append(random.choice(irs))
-        print('    Convolving')
+            j += 1
+            if j % 100 == 0:
+                print('.', end='')
+        print()
+
+        # Do convolution
+        print('    Convolving', end='')
         augmented = []
-        i = 0
+        j = 0
         for x, ir in zip(train_features, ir_for_example):
             augmented.append(np.convolve(x, ir))
-            i += 1
-            if i % 1000 == 0:
-                print('   ', i, len(train_features))
+            j += 1
+            if j % 100 == 0:
+                print('.', end='')
+        print()
 
         new_features += augmented
         if new_labels is not None:
