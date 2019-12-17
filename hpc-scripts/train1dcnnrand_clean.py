@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append('..')
 
 import tensorflow as tf
@@ -6,6 +7,8 @@ import tensorflow as tf
 from audioaugmentation.data import import_clean_data
 from audioaugmentation.models import cnn_rand
 from audioaugmentation.train import train
+
+tf.logging.set_verbosity(tf.logging.ERROR)
 
 model = cnn_rand()
 

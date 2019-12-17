@@ -21,6 +21,6 @@ cp -r ~/Audio-Augmentation-With-Filters $PFSDIR
 cd $PFSDIR/Audio-Augmentation-With-Filters/hpc-scripts
 
 echo "Running python script..."
-python train1dcnnrand_aug.py 1 aug_2x/ 2
+python train1dcnnrand_aug_gen.py 1 aug_2x/ 2
 
 cp -r aug_2x ~/Audio-Augmentation-With-Filters/models/

@@ -49,7 +49,7 @@ def import_clean_data(data_path: str, feature_size: int, crossover: float = 0.5)
 
 
 def import_augmented_data(data_path: str, feature_size: int, augmentation_factor: int, noise_mean: float,
-                          noise_stddev: float, num_rooms: int, crossover: float = 0.5):
+                          noise_stddev: float, num_rooms: int, batch_size: int, crossover: float = 0.5):
     data_folds, label_folds = data_frame_to_folds(data_path)
     test_features, test_labels, train_features, train_labels = combine_folds(data_folds, label_folds)
 
@@ -61,6 +61,7 @@ def import_augmented_data(data_path: str, feature_size: int, augmentation_factor
     new_features = []
     new_labels = None
 
+    '''
     print("Applying augmentation:")
     for i in range(augmentation_factor - 1):
         print(f"  pass {i + 1}...")
@@ -92,21 +93,43 @@ def import_augmented_data(data_path: str, feature_size: int, augmentation_factor
             new_labels = np.concatenate((new_labels, train_labels))
         else:
             new_labels = train_labels.copy()
-    '''
     # Listen to 10 random samples
     for _ in range(10):
         clip = random.choice(new_features)
         sd.play(clip / np.abs(clip.max()), 16000, blocking=True)
-    '''
 
     train_features += new_features
     train_labels = np.concatenate((train_labels, new_labels))
 
     # Conform
     train_features, train_labels = conform_examples(train_features, train_labels, feature_size, crossover)
+    '''
+
+    generator = AugmentedDataGenerator(train_features, train_labels, batch_size, feature_size, crossover)
+
     test_features, test_labels = conform_examples(test_features, test_labels, feature_size, crossover)
 
-    return test_features, test_labels, train_features, train_labels
+    return generator, test_features, test_labels
+
+
+def import_augmented_data_gen(data_path: str, feature_size: int, noise_mean: float, augmentation_factor: int,
+                              noise_stddev: float, num_rooms: int, batch_size: int, crossover: float = 0.5):
+    data_folds, label_folds = data_frame_to_folds(data_path)
+    test_features, test_labels, train_features, train_labels = combine_folds(data_folds, label_folds)
+
+    # Augment
+    nd = noise_distribution(noise_mean, noise_stddev)
+    rd = room_distribution(num_rooms)
+    irs = rd.make_irs(num_rooms)
+
+    n = len(train_features)
+    steps_per_epoch = int(np.ceil(n / batch_size)) * augmentation_factor
+
+    generator = AugmentedDataGenerator(train_features, train_labels, irs, batch_size, feature_size, crossover)
+
+    test_features, test_labels = conform_examples(test_features, test_labels, feature_size, crossover)
+
+    return generator, steps_per_epoch, test_features, test_labels
 
 
 def conform_examples(X_list: [np.ndarray], y_original: np.ndarray, window_size: int, crossover: float):
@@ -187,7 +210,7 @@ class room_distribution(object):
     def sample(self):
         # TODO: add a random source and microphone to a random room, then return
         dims = random.choice(self.rooms)
-        absorption = np.clip(np.random.normal(0.3, size=1), 1e-2, 0.9)[0]
+        absorption = np.clip(np.random.normal(0.5, size=1), 1e-2, 0.9)[0]
         room = pra.ShoeBox(dims, fs=16000, absorption=absorption, max_order=40)
         source = room_distribution.sample_source(room)
         mic = room_distribution.sample_mic(room)
@@ -219,3 +242,39 @@ class room_distribution(object):
         sd.play(signal, 16000, blocking=True)
         return signal
     '''
+
+
+class AugmentedDataGenerator(object):
+    def __init__(self, X, y, irs, batch_size, feature_size, crossover):
+        self.n = len(X)
+        self._X = X
+        self._y = y
+        self._irs = irs
+        self.batch_size = batch_size
+        self.feature_size = feature_size
+        self.crossover = crossover
+
+    def __call__(self):
+        while True:
+            i = 0
+            while i < self.n:
+                i_next = i + self.batch_size
+                i_next = self.n if i_next > self.n else i_next
+
+                batch_X = self._X[i:i_next]
+                batch_y = self._y[i:i_next]
+
+                # Generate IRs
+                batch_irs = []
+                for _ in range(self.batch_size):
+                    batch_irs.append(random.choice(self._irs))
+
+                # Convolve samples
+                convolved = []
+                for x, ir in zip(batch_X, batch_irs):
+                    convolved.append(np.convolve(x, ir))
+
+                # Conform and yield
+                train_features, train_labels = conform_examples(convolved, batch_y, self.feature_size, self.crossover)
+                yield train_features, train_labels
+                i = i_next
