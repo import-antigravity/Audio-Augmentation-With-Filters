@@ -16,10 +16,11 @@ module load python/3.6.6
 module load cuda/9.0
 
 echo "Copying to PFSDIR..."
+echo $PFSDIR
 cp -r ~/Audio-Augmentation-With-Filters $PFSDIR
-cd $PFSDIR/Audio-Augmentation-With-Filters
+cd $PFSDIR/Audio-Augmentation-With-Filters/hpc-scripts
 
 echo "Running python script..."
-python train1dcnnrand_aug.py 1 aug_2x 2
+python train1dcnnrand_aug.py 1 aug_2x/ 2
 
 cp -r aug_2x ~/Audio-Augmentation-With-Filters/models/
