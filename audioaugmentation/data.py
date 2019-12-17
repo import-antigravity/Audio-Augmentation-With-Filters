@@ -4,12 +4,11 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 import pyroomacoustics as pra
-import tensorflow as tf
 from sklearn.preprocessing import LabelEncoder
 
 
-def import_clean_data(data_path: str, feature_size: int):
-    with open(data_path + os.sep + 'UrbanSound_sr16000.dms', 'rb') as fp:
+def data_frame_to_folds(data_path: str):
+    with open(os.path.join(data_path, 'UrbanSound_sr16000.dms'), 'rb') as fp:
         itemlist = pickle.load(fp)
     labels = itemlist.pop('class_label')
     le = LabelEncoder()
@@ -20,43 +19,62 @@ def import_clean_data(data_path: str, feature_size: int):
     data_folds = []
     label_folds = []
     for i in range(10):
-        fold_features = features[np.where(folds == i + 1)[0]].to_numpy()
+        fold_features = features[np.where(folds == i + 1)[0]].tolist()
         fold_labels = labels[np.where(folds == i + 1)[0]]
-        fold_features, fold_labels = conform_examples(fold_features, fold_labels, feature_size, 0.5)
         data_folds.append(fold_features)
         label_folds.append(fold_labels)
+    # data_folds: list of lists, label_folds: list of arrays
+    return data_folds, label_folds
+
+
+def combine_folds(data_folds, label_folds):
     test_features = data_folds[-1]
-    train_features = np.concatenate(data_folds[:-1])
+    train_features = [example for fold in data_folds[:-1] for example in fold]
     test_labels = label_folds[-1]
     train_labels = np.concatenate(label_folds[:-1])
+
+    # features are lists, labels are arrays
     return test_features, test_labels, train_features, train_labels
 
 
-def import_augmented_data(augmentation_percent: float, noise_mean: float, noise_stddev: float, num_rooms: int):
-    with open(f'..{os.sep}data{os.sep}UrbanSound_sr16000.dms', 'rb') as fp:
-        itemlist = pickle.load(fp)
-    labels = itemlist.pop('class_label')
-    le = LabelEncoder()
-    labels = le.fit_transform(labels)
-    labels = tf.one_hot(labels, 10)
-    features = itemlist.pop('audio')
+def import_clean_data(data_path: str, feature_size: int, crossover: float = 0.5):
+    data_folds, label_folds = data_frame_to_folds(data_path)
+    test_features, test_labels, train_features, train_labels = combine_folds(data_folds, label_folds)
+
+    # Conform
+    train_features, train_labels = conform_examples(train_features, train_labels, feature_size, crossover)
+    test_features, test_labels = conform_examples(test_features, test_labels, feature_size, crossover)
+
+    return test_features, test_labels, train_features, train_labels
+
+
+def import_augmented_data(data_path: str, feature_size: int, augmentation_factor: int, noise_mean: float,
+                          noise_stddev: float, num_rooms: int, crossover: float = 0.5):
+    data_folds, label_folds = data_frame_to_folds(data_path)
+    test_features, test_labels, train_features, train_labels = combine_folds(data_folds, label_folds)
+
+    # Augment
     nd = noise_distribution(noise_mean, noise_stddev)
     rd = room_distribution(num_rooms)
-    test_set_size = int(0.2 * features.shape[0])
-    test_features = features[:test_set_size]
-    train_features = features[test_set_size:]
-    test_labels = labels[:test_set_size]
-    train_labels = labels[test_set_size:]
-    for f in [rd.augment, nd.augment]:
-        test_features.map(
-            lambda x: tf.cond(tf.random_uniform([], 0, 1) > (1 - augmentation_percent), lambda: f(x), lambda: x))
-        train_features.map(
-            lambda x: tf.cond(tf.random_uniform([], 0, 1) > (1 - augmentation_percent), lambda: f(x), lambda: x))
-    test_features, test_labels = conform_examples(list(test_features), test_labels, 50999, 0.5)
-    train_features, train_labels = conform_examples(list(train_features), train_labels, 50999, 0.5)
-    Testing_Dataset = tf.data.Dataset.from_tensor_slices((test_features, test_labels))
-    Training_Dataset = tf.data.Dataset.from_tensor_slices((train_features, train_labels))
-    return Training_Dataset, Testing_Dataset
+
+    new_features = []
+    new_labels = []
+
+    print("Applying augmentation:")
+    for i in range(augmentation_factor - 1):
+        for i, clip in enumerate(train_features):
+            transformed = nd.augment(rd.augment(clip))
+            new_features.append(transformed)
+            new_labels.append(train_labels[i])
+
+    train_features += new_features
+    train_labels = np.concatenate((train_labels, np.array(new_labels)))
+
+    # Conform
+    train_features, train_labels = conform_examples(train_features, train_labels, feature_size, crossover)
+    test_features, test_labels = conform_examples(test_features, test_labels, feature_size, crossover)
+
+    return test_features, test_labels, train_features, train_labels
 
 
 def conform_examples(X_list: [np.ndarray], y_original: np.ndarray, window_size: int, crossover: float):
@@ -68,6 +86,8 @@ def conform_examples(X_list: [np.ndarray], y_original: np.ndarray, window_size: 
 
     for i in range(len(X_list)):
         sample = X_list[i].astype('float32')
+        print(np.abs(sample).max())
+        sample = sample / np.abs(sample).max()  # Normalize samples
         if sample.shape[0] <= window_size:
             zeros = np.zeros(window_size - sample.shape[0])
             padded = np.concatenate((sample, zeros))
@@ -92,7 +112,7 @@ class noise_distribution(object):
         self.mean = mean
         self.stddev = stddev
 
-    def augment(self, x: tf.Tensor) -> tf.Tensor:
+    def augment(self, x: np.ndarray) -> np.ndarray:
         noise = np.random.normal(loc=self.mean, scale=self.stddev, size=x.shape)
         return x + noise
 
@@ -144,11 +164,13 @@ class room_distribution(object):
         room.add_microphone_array(mic)
         return room
 
-    def augment(self, x: tf.Tensor) -> tf.Tensor:
+    def augment(self, x: np.ndarray) -> np.ndarray:
         room = self.sample()
         room.sources[0].add_signal(x)
-        room.simulate()
-        return room.mic_array.signals[1, :]
+        room.compute_rir()
+        ir = room.rir[0][0]
+        signal = np.convolve(x, ir)
+        return signal
 
 
 if __name__ == "__main__":
