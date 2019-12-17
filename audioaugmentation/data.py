@@ -1,5 +1,6 @@
 import os
 import pickle
+import random
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,7 +9,7 @@ from sklearn.preprocessing import LabelEncoder
 
 
 def data_frame_to_folds(data_path: str):
-    with open(os.path.join(data_path, 'UrbanSound_sr16000.dms'), 'rb') as fp:
+    with open(os.path.join(data_path, 'UrbanSound_sr16000'), 'rb') as fp:
         itemlist = pickle.load(fp)
     labels = itemlist.pop('class_label')
     le = LabelEncoder()
@@ -62,10 +63,10 @@ def import_augmented_data(data_path: str, feature_size: int, augmentation_factor
 
     print("Applying augmentation:")
     for i in range(augmentation_factor - 1):
-        for i, clip in enumerate(train_features):
+        for j, clip in enumerate(train_features):
             transformed = nd.augment(rd.augment(clip))
             new_features.append(transformed)
-            new_labels.append(train_labels[i])
+            new_labels.append(train_labels[j])
 
     train_features += new_features
     train_labels = np.concatenate((train_labels, np.array(new_labels)))
@@ -124,8 +125,7 @@ class room_distribution(object):
         # TODO: create a distribution of PRA rooms
         for i in range(num_rooms):
             dims = np.random.randint(low=1, high=10, size=2)
-            room = pra.ShoeBox(dims, fs=16000)
-            self.rooms.append(room)
+            self.rooms.append(dims)
 
     @staticmethod
     def sample_loc(walls):
@@ -157,7 +157,8 @@ class room_distribution(object):
     # returns a room populated with a source and microphone array, drawn from the random distributions
     def sample(self):
         # TODO: add a random source and microphone to a random room, then return
-        room = np.random.choice(self.rooms)
+        dims = random.choice(self.rooms)
+        room = pra.ShoeBox(dims, fs=16000)
         source = room_distribution.sample_source(room)
         mic = room_distribution.sample_mic(room)
         room.add_source(source)
@@ -174,8 +175,4 @@ class room_distribution(object):
 
 
 if __name__ == "__main__":
-    print(np.array([2.4238, 4.43235]))
-    rd = room_distribution(100)
-    s = rd.sample()
-    s.plot()
-    plt.show()
+    a, b, c, d = import_augmented_data("..\\data", 50999, 3, 0, 1, 100)
