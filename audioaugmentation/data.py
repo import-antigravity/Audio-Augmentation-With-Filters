@@ -49,7 +49,7 @@ def import_clean_data(data_path: str, feature_size: int, crossover: float = 0.5)
 
 
 def import_augmented_data(data_path: str, feature_size: int, augmentation_factor: int, noise_mean: float,
-                          noise_stddev: float, num_rooms: int, batch_size: int, crossover: float = 0.5):
+                          noise_stddev: float, num_rooms: int, crossover: float = 0.5):
     data_folds, label_folds = data_frame_to_folds(data_path)
     test_features, test_labels, train_features, train_labels = combine_folds(data_folds, label_folds)
 
@@ -61,7 +61,6 @@ def import_augmented_data(data_path: str, feature_size: int, augmentation_factor
     new_features = []
     new_labels = None
 
-    '''
     print("Applying augmentation:")
     for i in range(augmentation_factor - 1):
         print(f"  pass {i + 1}...")
@@ -93,23 +92,15 @@ def import_augmented_data(data_path: str, feature_size: int, augmentation_factor
             new_labels = np.concatenate((new_labels, train_labels))
         else:
             new_labels = train_labels.copy()
-    # Listen to 10 random samples
-    for _ in range(10):
-        clip = random.choice(new_features)
-        sd.play(clip / np.abs(clip.max()), 16000, blocking=True)
 
     train_features += new_features
     train_labels = np.concatenate((train_labels, new_labels))
 
     # Conform
     train_features, train_labels = conform_examples(train_features, train_labels, feature_size, crossover)
-    '''
-
-    generator = AugmentedDataGenerator(train_features, train_labels, batch_size, feature_size, crossover)
-
     test_features, test_labels = conform_examples(test_features, test_labels, feature_size, crossover)
 
-    return generator, test_features, test_labels
+    return test_features, test_labels, train_features, train_labels
 
 
 def import_augmented_data_gen(data_path: str, feature_size: int, noise_mean: float, augmentation_factor: int,
