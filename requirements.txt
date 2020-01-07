@@ -1,4 +1,3 @@
-pyroomacoustics
 matplotlib
 scikit-learn
 pandas

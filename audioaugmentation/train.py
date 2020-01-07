@@ -1,47 +1,33 @@
 import os
+from typing import Tuple
 
-import tensorflow as tf
+import numpy as np
+from tensorflow import keras
 
 
-def train(data, classifier, optimizer, epochs, batch_size, model_path, num_gpus):
-    os.makedirs(model_path)
-    print('Loading dataset')
-    test_features, test_labels, train_features, train_labels = data
-    print('Dataset:', train_features.shape, train_labels.shape)
-    if num_gpus > 1:
-        model = tf.keras.utils.multi_gpu_model(classifier, num_gpus)
-    else:
-        model = classifier
-    model.compile(optimizer, loss=tf.keras.losses.mean_squared_logarithmic_error)
+def train_baseline(model, optimizer, name: str, num_epochs: int, batch_size: int,
+                   data: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray], callbacks: list = None,
+                   model_path: str = None):
+    if model_path is None:
+        model_path = f'../models/{name}'
+    if callbacks is None:
+        callbacks = [
+            keras.callbacks.ReduceLROnPlateau(min_lr=1e-6),
+            keras.callbacks.ModelCheckpoint(os.path.join(model_path, '{epoch:02d}-{val_loss:.2f}.hdf5'),
+                                            monitor='val_loss', verbose=0, save_best_only=True,
+                                            save_weights_only=True, mode='auto', period=1),
+            keras.callbacks.CSVLogger(os.path.join(model_path, "model_history_log.csv"), append=True)
+        ]
+
+    print(model.summary())
+
+    X_train, y_train, X_test, y_test = data
+
+    os.makedirs(model_path, exist_ok=True)
+
+    print('Dataset:', X_train.shape, y_train.shape)
+    model.compile(optimizer, loss=keras.losses.mean_squared_logarithmic_error)
     print('Training...')
-    reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(min_lr=1e-8)
-    checkpoint = tf.keras.callbacks.ModelCheckpoint(os.path.join(model_path, '{epoch:02d}-{val_loss:.2f}.hdf5'),
-                                                    monitor='val_loss', verbose=0, save_best_only=True,
-                                                    save_weights_only=False, mode='auto', period=1)
-    csv_logger = tf.keras.callbacks.CSVLogger(os.path.join(model_path, "model_history_log.csv"), append=True)
-    # Train model
-    history = model.fit(train_features, train_labels, validation_data=(test_features, test_labels),
-                        batch_size=batch_size, epochs=epochs, callbacks=[checkpoint, csv_logger, reduce_lr])
-    return model, optimizer, history
-
-
-def train_generator(data, classifier, optimizer, epochs, model_path, num_gpus):
-    os.makedirs(model_path)
-    print('Loading dataset')
-    generator, steps_per_epoch, test_features, test_labels = data
-    if num_gpus > 1:
-        model = tf.keras.utils.multi_gpu_model(classifier, num_gpus)
-    else:
-        model = classifier
-    model.compile(optimizer, loss=tf.keras.losses.mean_squared_logarithmic_error)
-    print('Training...')
-    reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(min_lr=1e-8)
-    checkpoint = tf.keras.callbacks.ModelCheckpoint(os.path.join(model_path, '{epoch:02d}-{val_loss:.2f}.hdf5'),
-                                                    monitor='val_loss', verbose=0, save_best_only=True,
-                                                    save_weights_only=False, mode='auto', period=1)
-    csv_logger = tf.keras.callbacks.CSVLogger(os.path.join(model_path, "model_history_log.csv"), append=True)
-    # Train model
-    history = model.fit_generator(generator(), steps_per_epoch=steps_per_epoch,
-                                  validation_data=(test_features, test_labels),
-                                  epochs=epochs, callbacks=[checkpoint, csv_logger, reduce_lr])
+    history = model.fit(X_train, y_train, validation_data=(X_test, y_test), batch_size=batch_size, epochs=num_epochs,
+                        callbacks=callbacks)
     return model, optimizer, history
