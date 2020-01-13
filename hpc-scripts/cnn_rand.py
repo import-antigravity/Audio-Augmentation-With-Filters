@@ -1,3 +1,6 @@
+import sys
+
+sys.path.append('..')
 from sys import argv
 
 # Naming convention "cnn_rand_{augm|base}_{fold}"
