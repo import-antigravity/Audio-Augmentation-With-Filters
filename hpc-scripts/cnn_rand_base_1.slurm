@@ -17,4 +17,4 @@ module load cuda/9.0
 
 cd ~/Audio-Augmentation-With-Filters/hpc-scripts
 echo "Running python script..."
-python cnn_rand 1 0
+python cnn_rand.py 1 0
