@@ -12,7 +12,7 @@ def train_baseline(model, optimizer, name: str, num_epochs: int, batch_size: int
         model_path = f'../models/{name}'
     if callbacks is None:
         callbacks = [
-            keras.callbacks.ReduceLROnPlateau(min_lr=1e-9),
+            keras.callbacks.ReduceLROnPlateau(min_lr=1e-12),
             keras.callbacks.ModelCheckpoint(os.path.join(model_path, '{epoch:02d}-{val_loss:.2f}.hdf5'),
                                             monitor='val_loss', verbose=0, save_best_only=True,
                                             save_weights_only=True, mode='auto', period=1),
