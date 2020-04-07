@@ -28,7 +28,7 @@ X_test_w, y_test_w, _ = window_examples(X_test, y_test, window_size, crossover)
 kwargs = {
     'model': models.cnn_rand(),
     'optimizer': keras.optimizers.Adadelta(),
-    'loss': 'mean_squared_logarithmic_error',
+    'loss': keras.losses.mean_squared_logarithmic_error,
     'name': name,
     'num_epochs': 1000,
     'batch_size': 100,
