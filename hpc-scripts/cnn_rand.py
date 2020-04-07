@@ -22,8 +22,8 @@ X_train, y_train, X_test, y_test = dms_to_numpy(fold)
 window_size = 32000
 crossover = 0.5
 
-X_train_conf, y_train_conf, _ = window_examples(X_train, y_train, window_size, crossover)
-X_test_conf, y_test_conf, _ = window_examples(X_test, y_test, window_size, crossover)
+X_train_w, y_train_w, _ = window_examples(X_train, y_train, window_size, crossover)
+X_test_w, y_test_w, _ = window_examples(X_test, y_test, window_size, crossover)
 
 kwargs = {
     'model': models.cnn_rand(),
@@ -31,10 +31,7 @@ kwargs = {
     'name': name,
     'num_epochs': 1000,
     'batch_size': 100,
-    'data': (
-        (X_train_conf, y_train_conf),
-        (X_test_conf, y_test_conf)
-    )
+    'data': (X_train_w, y_train_w, X_test_w, y_test_w)
 }
 
 if augmented:
