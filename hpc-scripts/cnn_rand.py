@@ -30,7 +30,7 @@ kwargs = {
     'optimizer': keras.optimizers.Adadelta(),
     'loss': keras.losses.mean_squared_logarithmic_error,
     'name': name,
-    'num_epochs': 1000,
+    'num_epochs': 100,
     'batch_size': 100,
     'data': (X_train_w, y_train_w, X_test_w, y_test_w)
 }

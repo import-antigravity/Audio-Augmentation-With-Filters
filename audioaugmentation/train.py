@@ -12,9 +12,10 @@ def train_baseline(model, optimizer, loss, name: str, num_epochs: int, batch_siz
         model_path = f'../models/{name}'
     if callbacks is None:
         callbacks = [
-            keras.callbacks.ModelCheckpoint(os.path.join(model_path, '{epoch:02d}-{val_loss:.2f}.hdf5'),
+            keras.callbacks.ModelCheckpoint(os.path.join(model_path, '{epoch:02d}-{val_loss:.4f}'),
                                             monitor='val_loss', verbose=0, save_best_only=True,
                                             save_weights_only=True, mode='auto', period=1),
+            keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=10),
             keras.callbacks.CSVLogger(os.path.join(model_path, "model_history_log.csv"), append=True)
         ]
 
