@@ -36,13 +36,14 @@ def dms_to_numpy(fold: int, path: str = '../data/UrbanSound_sr16000.dms') \
     return X_train, y_train, X_test, y_test
 
 
-def conform_examples(X_list: List[np.ndarray], y_original: np.ndarray, window_size: int, crossover: float) \
-        -> Tuple[np.ndarray, np.ndarray]:
+def window_examples(X_list: List[np.ndarray], y_original: np.ndarray, window_size: int, crossover: float) \
+        -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     # INPUT MUST BE NUMPY ARRAYS, THERE IS NO POINT IN CONVERTING TO TENSORS BEFORE CALLING THIS METHOD
     assert len(X_list) == y_original.shape[0]
 
     X = []
     y = []
+    index = []
 
     for i in range(len(X_list)):
         sample = X_list[i].astype('float32')
@@ -51,6 +52,7 @@ def conform_examples(X_list: List[np.ndarray], y_original: np.ndarray, window_si
             padded = np.concatenate((sample, zeros))
             X.append(padded)
             y.append(y_original[i])
+            index.append(i)
         else:
             current_start = 0
             while current_start < sample.shape[0]:
@@ -60,6 +62,7 @@ def conform_examples(X_list: List[np.ndarray], y_original: np.ndarray, window_si
                 padded = np.concatenate((sample[current_start:current_start + window_size], zeros))
                 X.append(padded)
                 y.append(y_original[i])
+                index.append(i)
                 current_start += int((1. - crossover) * window_size)
 
-    return np.vstack(X), np.vstack(y)
+    return np.vstack(X), np.vstack(y), np.array(index)

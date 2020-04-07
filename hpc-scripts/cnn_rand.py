@@ -7,7 +7,7 @@ from sys import argv
 from tensorflow import keras
 
 from audioaugmentation import models
-from audioaugmentation.data import conform_examples, dms_to_numpy
+from audioaugmentation.data import window_examples, dms_to_numpy
 from audioaugmentation.train import train_baseline
 
 fold = int(argv[1])
@@ -22,6 +22,9 @@ X_train, y_train, X_test, y_test = dms_to_numpy(fold)
 window_size = 32000
 crossover = 0.5
 
+X_train_conf, y_train_conf, _ = window_examples(X_train, y_train, window_size, crossover)
+X_test_conf, y_test_conf, _ = window_examples(X_test, y_test, window_size, crossover)
+
 kwargs = {
     'model': models.cnn_rand(),
     'optimizer': keras.optimizers.Adadelta(),
@@ -29,8 +32,8 @@ kwargs = {
     'num_epochs': 1000,
     'batch_size': 100,
     'data': (
-        *conform_examples(X_train, y_train, window_size, crossover),
-        *conform_examples(X_test, y_test, window_size, crossover)
+        (X_train_conf, y_train_conf),
+        (X_test_conf, y_test_conf)
     )
 }
 
