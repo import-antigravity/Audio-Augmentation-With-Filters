@@ -3,7 +3,7 @@
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=32gb
 #SBATCH --time=0-10:00:00
-#SBATCH -p gpu -C gpu2080 --gres=gpu:1
+#SBATCH -C gpu2080 --gres=gpu:1
 #SBATCH --mail-user=grd27@case.edu
 #SBATCH --mail-type=ALL
 #SBATCH --output=cnn_rand_base_5.txt

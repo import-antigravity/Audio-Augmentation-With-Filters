@@ -1,6 +1,0 @@
-model_checkpoint_path: "22-0.02.hdf5"
-all_model_checkpoint_paths: "05-0.03.hdf5"
-all_model_checkpoint_paths: "08-0.03.hdf5"
-all_model_checkpoint_paths: "10-0.03.hdf5"
-all_model_checkpoint_paths: "21-0.02.hdf5"
-all_model_checkpoint_paths: "22-0.02.hdf5"
