@@ -3,4 +3,4 @@ scikit-learn
 pandas
 numpy
 h5py
-tensorflow==1.10
+tensorflow==1.15.2
