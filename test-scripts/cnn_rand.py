@@ -1,3 +1,7 @@
+import sys
+
+sys.path.append('..')
+
 import numpy as np
 import tensorflow as tf
 from scipy.stats import mode
@@ -5,10 +9,12 @@ from scipy.stats import mode
 from audioaugmentation import models
 from audioaugmentation.data import dms_to_numpy, window_examples
 
-fold = 2
+fold = 1
 
 model = models.cnn_rand()
 model.load_weights(tf.train.latest_checkpoint(f'../models/cnn_rand_base_{fold}'))
+
+print(model.summary())
 
 X_train, y_train, X_test, y_test = dms_to_numpy(fold)
 y = y_test.argmax(axis=1)
