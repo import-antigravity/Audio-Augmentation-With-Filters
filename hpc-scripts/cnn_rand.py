@@ -24,10 +24,10 @@ crossover = 0.5
 
 kwargs = {
     'model': models.cnn_rand(),
-    'optimizer': keras.optimizers.Adam(1e-4),
+    'optimizer': keras.optimizers.Adadelta(),
     'name': name,
     'num_epochs': 1000,
-    'batch_size': 10,
+    'batch_size': 100,
     'data': (
         *conform_examples(X_train, y_train, window_size, crossover),
         *conform_examples(X_test, y_test, window_size, crossover)
