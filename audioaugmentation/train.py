@@ -71,8 +71,7 @@ def train_augmented(model, optimizer, loss, name: str, num_epochs: int, batch_si
     model.compile(optimizer, loss=loss)
 
     generator = DataSequence(X_train, y_train, filters, salamon, batch_size, window_size, crossover)
-
-    model.compile(optimizer, loss=loss)
+    
     print('Training...')
     history = model.fit_generator(generator, validation_data=(X_test_win, y_test_win), epochs=num_epochs,
                                   steps_per_epoch=len(generator), callbacks=callbacks, shuffle=True,
