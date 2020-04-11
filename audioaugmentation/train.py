@@ -223,7 +223,7 @@ class DataSequence(Sequence):
     def filter(self, X):
         # Choose batch_size filters at random, combine with laplace distribution
         n_filters = self.filter_df.shape[1]
-        filters = self.make_filters(n_filters, self.batch_size)
+        filters = self.make_filters(n_filters, X.shape[0])
         convolved = fftconvolve(X, filters, axes=1)
         return convolved
 

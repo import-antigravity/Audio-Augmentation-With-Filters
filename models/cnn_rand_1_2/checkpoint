@@ -1,0 +1,6 @@
+model_checkpoint_path: "80-0.0104"
+all_model_checkpoint_paths: "35-0.0156"
+all_model_checkpoint_paths: "41-0.0138"
+all_model_checkpoint_paths: "67-0.0122"
+all_model_checkpoint_paths: "76-0.0121"
+all_model_checkpoint_paths: "80-0.0104"
