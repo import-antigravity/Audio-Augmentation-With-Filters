@@ -37,8 +37,8 @@ def train_baseline(model, optimizer, loss, name: str, num_epochs: int, batch_siz
     print('Dataset:', X_train.shape, y_train.shape)
     model.compile(optimizer, loss=loss)
     print('Training...')
-    history = model.fit(X_train, y_train, validation_data=(X_test, y_test), batch_size=batch_size, epochs=num_epochs,
-                        callbacks=callbacks, shuffle=True)
+    history = model.fit(X_train_w, y_train_w, validation_data=(X_test_w, y_test_w), batch_size=batch_size,
+                        epochs=num_epochs, callbacks=callbacks, shuffle=True)
     return model, optimizer, history
 
 
