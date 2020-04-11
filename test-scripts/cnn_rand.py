@@ -4,14 +4,13 @@ sys.path.append('..')
 
 import numpy as np
 import tensorflow as tf
-from scipy.stats import mode
 
 from audioaugmentation import models
 from audioaugmentation.data import dms_to_numpy, window_examples
 
 fold = 1
 
-model = models.cnn_rand()
+model = models.cnn_rand32k()
 model.load_weights(tf.train.latest_checkpoint(f'../models/cnn_rand_base_{fold}'))
 
 print(model.summary())
@@ -30,12 +29,12 @@ y_hat = np.zeros(X_test.shape[0])
 window = 0
 # Perform majority voting
 for i in range(y_hat.size):
-    votes = []
+    votes = np.zeros(10)
     try:
         while index[window] == i:
-            votes.append(np.argmax(y_hat_win[window]))
+            votes += y_hat_win[window]
             window += 1
-        y_hat[i] = int(mode(votes).mode)
+        y_hat[i] = np.argmax(votes)
     except IndexError:
         pass
 
