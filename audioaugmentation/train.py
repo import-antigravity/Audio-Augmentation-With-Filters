@@ -71,7 +71,7 @@ def train_augmented(model, optimizer, loss, name: str, num_epochs: int, batch_si
     model.compile(optimizer, loss=loss)
 
     generator = DataSequence(X_train, y_train, filters, salamon, batch_size, window_size, crossover)
-    
+
     print('Training...')
     history = model.fit_generator(generator, validation_data=(X_test_win, y_test_win), epochs=num_epochs,
                                   steps_per_epoch=len(generator), callbacks=callbacks, shuffle=True,
@@ -134,7 +134,7 @@ class DataGenerator(object):
     def filter(self, X):
         # Choose batch_size filters at random, combine with laplace distribution
         n_filters = self.filter_df.shape[1]
-        filters = self.make_filters(n_filters, self.batch_size)
+        filters = self.make_filters(n_filters, X.shape[0])
         convolved = fftconvolve(X, filters, axes=1)
         return convolved
 
