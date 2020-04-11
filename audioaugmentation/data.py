@@ -37,11 +37,14 @@ def dms_to_numpy(fold: int, path: str = '../data/UrbanSound_sr16000.dms') \
 
 
 def pad(X_list: Iterable[np.ndarray]):
-    lengths = [a.size for a in X_list]
-    X = np.zeros((len(X_list), max(lengths)))
-    for i in range(len(X_list)):
-        X[i, :lengths[i]] = X_list[i]
-    return X
+    if len(X_list) > 0:
+        lengths = [a.size for a in X_list]
+        X = np.zeros((len(X_list), max(lengths)))
+        for i in range(len(X_list)):
+            X[i, :lengths[i]] = X_list[i]
+        return X
+    else:
+        return np.array([])
 
 
 def window_examples(X_list: List[np.ndarray], y_original: np.ndarray, window_size: int, crossover: float) \
