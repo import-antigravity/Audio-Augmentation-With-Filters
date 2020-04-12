@@ -13,7 +13,7 @@ from audioaugmentation.train import train_baseline, train_augmented
 fold = int(argv[1])
 augmented = int(argv[2])
 
-name = f'cnn_rand_{augmented if augmented else "base"}_{fold}'
+name = f'cnn_rand16k_{augmented if augmented else "base"}_{fold}'
 
 print(f'Training model cnn_rand16k, fold {fold}, {"not " if not augmented else ""}augmented')
 
