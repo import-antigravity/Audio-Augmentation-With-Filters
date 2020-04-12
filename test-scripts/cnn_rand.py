@@ -11,18 +11,22 @@ from audioaugmentation.data import dms_to_numpy, window_examples
 fold = 2
 
 model = models.cnn_rand32k()
-model.load_weights(tf.train.latest_checkpoint(f'../models/cnn_rand_base_{fold}'))
+latest = tf.train.latest_checkpoint(f'../models/cnn_rand_1_{fold}')
+model.load_weights(latest)
 
 print(model.summary())
 
 X_train, y_train, X_test, y_test = dms_to_numpy(fold)
-y = y_test.argmax(axis=1)
+y = np.argmax(y_test, axis=1)
 
 window_size = 32000
 crossover = 0.5
 
 X_win, y_win, index = window_examples(X_test, y_test, window_size, crossover)
 y_hat_win = model.predict(X_win)
+
+msle = np.power(np.log(y_win + 1) - np.log(y_hat_win + 1), 2).mean()
+print(f"MSLE: {msle}")
 
 y_hat = np.zeros(X_test.shape[0])
 
