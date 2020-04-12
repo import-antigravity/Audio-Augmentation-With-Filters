@@ -8,10 +8,10 @@ import tensorflow as tf
 from audioaugmentation import models
 from audioaugmentation.data import dms_to_numpy, window_examples
 
-fold = 1
+fold = 2
 
 model = models.cnn_rand32k()
-model.load_weights(tf.train.latest_checkpoint(f'../models/cnn_rand_1_{fold}'))
+model.load_weights(tf.train.latest_checkpoint(f'../models/cnn_rand_base_{fold}'))
 
 print(model.summary())
 
