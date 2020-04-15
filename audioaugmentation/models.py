@@ -59,3 +59,27 @@ def cnn_rand16k():
     ]
 
     return tf.keras.Sequential(cnn)
+
+
+def salamon():
+    cnn = [
+        tf.keras.layers.InputLayer(input_shape=(128, 128)),
+        tf.keras.layers.Reshape((128, 128, 1)),
+        tf.keras.layers.Conv2D(24, (5, 5)),
+        tf.keras.layers.ReLU(),
+        tf.keras.layers.MaxPool2D((4, 2)),
+        tf.keras.layers.Conv2D(48, (5, 5)),
+        tf.keras.layers.ReLU(),
+        tf.keras.layers.MaxPool2D((4, 2)),
+        tf.keras.layers.Conv2D(48, (5, 5)),
+        tf.keras.layers.ReLU(),
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(64, kernel_regularizer=tf.keras.regularizers.l2(0.001)),
+        tf.keras.layers.Dropout(0.5),
+        tf.keras.layers.ReLU(),
+        tf.keras.layers.Dense(10, kernel_regularizer=tf.keras.regularizers.l2(0.001)),
+        tf.keras.layers.Dropout(0.5),
+        tf.keras.layers.Softmax()
+    ]
+
+    return tf.keras.Sequential(cnn)

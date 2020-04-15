@@ -24,7 +24,7 @@ kwargs = {
     'optimizer': keras.optimizers.Adadelta(),
     'loss': keras.losses.mean_squared_logarithmic_error,
     'name': name,
-    'num_epochs': 100,
+    'num_epochs': 200,
     'batch_size': 100,
     'window_size': 16000,
     'crossover': 0.5,

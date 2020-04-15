@@ -1,5 +1,7 @@
 import sys
 
+import librosa
+
 sys.path.append('..')
 from sys import argv
 
@@ -13,22 +15,30 @@ from audioaugmentation.train import train_baseline, train_augmented
 fold = int(argv[1])
 augmented = int(argv[2])
 
-name = f'cnn_rand_{augmented if augmented else "base"}_{fold}'
+name = f'salamon_{augmented if augmented else "base"}_{fold}'
 
-print(f'Training model cnn_rand, fold {fold}, {"not " if not augmented else ""}augmented')
+print(f'Training model salamon, fold {fold}, {"not " if not augmented else ""}augmented')
 
 X_train, y_train, X_test, y_test = dms_to_numpy(fold)
 
+
+def to_spectrogram(X):
+    win_hop = 375
+    S = librosa.feature.melspectrogram(X, sr=16000, n_mels=128, n_fft=win_hop, hop_length=win_hop)
+    return S
+
+
 kwargs = {
-    'model': models.cnn_rand32k(),
-    'optimizer': keras.optimizers.Adadelta(),
-    'loss': keras.losses.mean_squared_logarithmic_error,
+    'model': models.salamon(),
+    'optimizer': keras.optimizers.SGD(lr=0.01),
+    'loss': keras.losses.categorical_crossentropy,
     'name': name,
     'num_epochs': 200,
     'batch_size': 100,
-    'window_size': 32000,
+    'window_size': 48000,
     'crossover': 0.5,
-    'data': (X_train, y_train, X_test, y_test)
+    'data': (X_train, y_train, X_test, y_test),
+    'preprocess': (to_spectrogram, (128, 128))
 }
 
 if augmented:

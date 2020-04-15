@@ -1,8 +1,9 @@
 import os
-from typing import Tuple, List, Iterable
+from typing import Tuple, List, Iterable, Callable, Optional
 
 import numpy as np
 import pandas as pd
+from librosa import effects
 from scipy.signal import fftconvolve
 from tensorflow import keras
 from tensorflow.python.keras.utils import Sequence
@@ -11,9 +12,8 @@ from audioaugmentation.data import window_examples, pad
 
 
 def train_baseline(model, optimizer, loss, name: str, num_epochs: int, batch_size: int, window_size: int,
-                   crossover: float,
-                   data: Tuple[List[np.ndarray], np.ndarray, List[np.ndarray], np.ndarray], callbacks: list = None,
-                   model_path: str = None):
+                   crossover: float, data: Tuple[List[np.ndarray], np.ndarray, List[np.ndarray], np.ndarray],
+                   callbacks: list = None, model_path: str = None, preprocess: Optional[Tuple[Callable, Tuple]] = None):
     if model_path is None:
         model_path = f'../models/{name}'
     if callbacks is None:
@@ -36,9 +36,26 @@ def train_baseline(model, optimizer, loss, name: str, num_epochs: int, batch_siz
     os.makedirs(model_path, exist_ok=True)
 
     print('Dataset:', X_train.shape, y_train.shape)
+
+    if preprocess is None:
+        X_train_w_prep = X_train_w
+        X_test_w_prep = X_test_w
+    else:
+        print('Preprocessing...')
+        f, shape = preprocess
+        n_samples_train = X_train_w.shape[0]
+        n_samples_test = X_test_w.shape[0]
+        X_train_w_prep = np.zeros((n_samples_train, *shape))
+        X_test_w_prep = np.zeros((n_samples_test, *shape))
+
+        for i in range(n_samples_train):
+            X_train_w_prep[i] = f(X_train_w[i])
+        for i in range(n_samples_test):
+            X_test_w_prep[i] = f(X_test_w[i])
+
     model.compile(optimizer, loss=loss)
     print('Training...')
-    history = model.fit(X_train_w, y_train_w, validation_data=(X_test_w, y_test_w), batch_size=batch_size,
+    history = model.fit(X_train_w_prep, y_train_w, validation_data=(X_test_w_prep, y_test_w), batch_size=batch_size,
                         epochs=num_epochs, callbacks=callbacks, shuffle=True)
     return model, optimizer, history
 
@@ -46,8 +63,8 @@ def train_baseline(model, optimizer, loss, name: str, num_epochs: int, batch_siz
 def train_augmented(model, optimizer, loss, name: str, num_epochs: int, batch_size: int, window_size: int,
                     crossover: float, filters: bool, salamon: bool,
                     data: Tuple[Iterable[np.ndarray], np.ndarray, Iterable[np.ndarray], np.ndarray],
-                    callbacks: list = None,
-                    model_path: str = None):
+                    callbacks: list = None, model_path: str = None,
+                    preprocess: Optional[Tuple[Callable, Tuple]] = None):
     if model_path is None:
         model_path = f'../models/{name}'
     if callbacks is None:
@@ -70,17 +87,28 @@ def train_augmented(model, optimizer, loss, name: str, num_epochs: int, batch_si
     print('Dataset:', X_train.shape, y_train.shape)
     model.compile(optimizer, loss=loss)
 
-    generator = DataSequence(X_train, y_train, filters, salamon, batch_size, window_size, crossover)
+    n_samples_test = X_test_win.shape[0]
+    if preprocess is not None:
+        f, shape = preprocess
+        X_test_win_prep = np.zeros((n_samples_test, *shape))
+
+        for i in range(n_samples_test):
+            X_test_win_prep[i] = f(X_test_win[i])
+    else:
+        X_test_win_prep = X_test_win
+
+    generator = DataSequence(X_train, y_train, filters, salamon, batch_size, window_size, crossover, preprocess)
 
     print('Training...')
-    history = model.fit_generator(generator, validation_data=(X_test_win, y_test_win), epochs=num_epochs,
+    history = model.fit_generator(generator, validation_data=(X_test_win_prep, y_test_win), epochs=num_epochs,
                                   steps_per_epoch=len(generator), callbacks=callbacks, shuffle=True,
                                   use_multiprocessing=True)
     return model, optimizer, history
 
 
 class DataSequence(Sequence):
-    def __init__(self, X, y, filters: bool, salamon: bool, batch_size: int, window_size: int, crossover: float):
+    def __init__(self, X, y, filters: bool, salamon: bool, batch_size: int, window_size: int, crossover: float,
+                 preprocess: Optional[Tuple[Callable, Tuple]] = None):
         self.X = X
         self.y = y
         self.dataset_size = y.shape[0]
@@ -89,8 +117,12 @@ class DataSequence(Sequence):
         self.window_size = window_size
         self.crossover = crossover
         self.augment_functions = []
+        self.preprocess = preprocess
 
         if salamon:
+            self.pitch_shift_1 = np.array([-2., -1., 1., 2.])
+            self.pitch_shift_2 = np.array([-3.5, -2.5, 2.5, 3.5])
+            self.time_stretch = np.array([0.81, 0.93, 1.07, 1.23])
             self.salamon_init()
         if filters:
             self.filter_df = None
@@ -141,7 +173,24 @@ class DataSequence(Sequence):
         pass
 
     def salamon(self, X):
-        return X
+        n_samples = X.shape[0]
+        pitch_shift_amount = np.random.choice(self.pitch_shift_1, size=n_samples) + np.random.choice(
+            self.pitch_shift_2, size=n_samples)
+        stretch_amount = np.random.choice(self.time_stretch, size=n_samples)
+
+        new_X = np.zeros_like(X)
+
+        for i in range(n_samples):
+            stretched = effects.time_stretch(X[i], stretch_amount[i])
+            if stretched.size > X.shape[1]:
+                stretched = stretched[:X.shape[1]]
+            else:
+                stretched = np.concatenate((stretched, np.zeros(X.shape[1] - stretched.size)))
+
+            new_X[i] = effects.pitch_shift(stretched, sr=16000,
+                                           n_steps=pitch_shift_amount[i])
+
+        return new_X
 
     def reset(self):
         self.index = np.random.permutation(self.y.shape[0])
@@ -166,4 +215,14 @@ class DataSequence(Sequence):
         # window examples
         X_win, y_win, _ = window_examples(X_batch, y_batch, self.window_size, self.crossover)
 
-        return X_win, y_win
+        n_samples = X_win.shape[0]
+        if self.preprocess is not None:
+            f, shape = self.preprocess
+            X_win_prep = np.zeros((n_samples, *shape))
+
+            for i in range(n_samples):
+                X_win_prep[i] = f(X_win[i])
+        else:
+            X_win_prep = X_win
+
+        return X_win_prep, y_win
