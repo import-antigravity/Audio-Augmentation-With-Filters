@@ -6,8 +6,8 @@
 #SBATCH -C gpu2080 --gres=gpu:1
 #SBATCH --mail-user=grd27@case.edu
 #SBATCH --mail-type=ALL
-#SBATCH --output=cnn_rand_filter_10.txt
-#SBATCH --job-name="filter10"
+#SBATCH --output=cnn_rand32_filter10.txt
+#SBATCH --job-name="32filter10"
 
 echo "Loading modules..."
 
