@@ -39,11 +39,11 @@ def dms_to_numpy(fold: int, path: str = '../data/UrbanSound_sr16000.dms') \
     )
 
     train = itemlist[itemlist.fold != fold]
-    X_train = train.audio.values.tolist()
+    X_train = train.audio.values
     y_train = np.eye(10)[train.class_label.values]
 
     test = itemlist[itemlist.fold == fold]
-    X_test = test.audio.values.tolist()
+    X_test = test.audio.values
     y_test = np.eye(10)[test.class_label.values]
 
     return X_train, y_train, X_test, y_test
