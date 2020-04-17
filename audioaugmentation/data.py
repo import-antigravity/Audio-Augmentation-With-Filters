@@ -3,6 +3,19 @@ from typing import Tuple, List, Iterable
 
 import numpy as np
 
+classes = [
+    'air_conditioner',
+    'car_horn',
+    'children_playing',
+    'dog_bark',
+    'drilling',
+    'engine_idling',
+    'gun_shot',
+    'jackhammer',
+    'siren',
+    'street_music'
+]
+
 
 def dms_to_numpy(fold: int, path: str = '../data/UrbanSound_sr16000.dms') \
         -> Tuple[List[np.ndarray], np.ndarray, List[np.ndarray], np.ndarray]:

@@ -31,33 +31,30 @@ def train_baseline(model, optimizer, loss, name: str, num_epochs: int, batch_siz
 
     X_train, y_train, X_test, y_test = data
 
-    X_train_w, y_train_w, _ = window_examples(X_train, y_train, window_size, crossover)
     X_test_w, y_test_w, _ = window_examples(X_test, y_test, window_size, crossover)
 
     os.makedirs(model_path, exist_ok=True)
 
     print('Dataset:', X_train.shape, y_train.shape)
+    model.compile(optimizer, loss=loss)
 
     if preprocess is None:
-        X_train_w_prep = X_train_w
         X_test_w_prep = X_test_w
     else:
         print('Preprocessing...')
         f, shape = preprocess
-        n_samples_train = X_train_w.shape[0]
         n_samples_test = X_test_w.shape[0]
-        X_train_w_prep = np.zeros((n_samples_train, *shape))
         X_test_w_prep = np.zeros((n_samples_test, *shape))
 
-        for i in range(n_samples_train):
-            X_train_w_prep[i] = f(X_train_w[i])
         for i in range(n_samples_test):
             X_test_w_prep[i] = f(X_test_w[i])
 
-    model.compile(optimizer, loss=loss)
+    generator = DataSequence(X_train, y_train, False, False, batch_size, window_size, crossover, preprocess)
+
     print('Training...')
-    history = model.fit(X_train_w_prep, y_train_w, validation_data=(X_test_w_prep, y_test_w), batch_size=batch_size,
-                        epochs=num_epochs, callbacks=callbacks, shuffle=True)
+    history = model.fit_generator(generator, validation_data=(X_test_w_prep, y_test_w), epochs=num_epochs,
+                                  steps_per_epoch=len(generator), callbacks=callbacks, shuffle=True,
+                                  use_multiprocessing=True)
     return model, optimizer, history
 
 
@@ -225,5 +222,10 @@ class DataSequence(Sequence):
                 X_win_prep[i] = f(X_win[i])
         else:
             X_win_prep = X_win
+
+        # zero = np.abs(X_win_prep).sum(axis=1) < 0.01
+        zero = (X_win_prep == 0).sum(axis=1) / X_win.shape[0] > 0.5
+        X_win_prep = X_win_prep[~zero]
+        y_win = y_win[~zero]
 
         return X_win_prep, y_win

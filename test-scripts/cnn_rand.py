@@ -4,14 +4,14 @@ sys.path.append('..')
 
 import numpy as np
 import tensorflow as tf
-
 from audioaugmentation import models
 from audioaugmentation.data import dms_to_numpy, window_examples
 
 fold = 2
+augmented = 0
 
 model = models.cnn_rand32k()
-latest = tf.train.latest_checkpoint(f'../models/cnn_rand_1_{fold}')
+latest = tf.train.latest_checkpoint(f'../models/cnn_rand_{augmented if augmented else "base"}_{fold}')
 model.load_weights(latest)
 
 print(model.summary())
@@ -36,7 +36,18 @@ for i in range(y_hat.size):
     votes = np.zeros(10)
     try:
         while index[window] == i:
-            votes += y_hat_win[window]
+            # Don't count windows where there isn't enough information
+            percent_zero = (X_win[window] == 0).sum() / X_win[window].size
+            '''
+            if percent_zero > 0.5:
+                print(window)
+                print(classes[y_win[window].argmax()])
+                plt.plot(X_win[window])
+                plt.show()
+                sd.play(X_win[window], blocking=True, samplerate=16000)
+            '''
+            if percent_zero <= 0.5:
+                votes += y_hat_win[window]
             window += 1
         y_hat[i] = np.argmax(votes)
     except IndexError:
