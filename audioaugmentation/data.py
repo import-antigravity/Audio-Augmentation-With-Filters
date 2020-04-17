@@ -2,7 +2,6 @@ import pickle
 from typing import Tuple, List, Iterable
 
 import numpy as np
-import pandas as pd
 
 classes = [
     'air_conditioner',
@@ -18,41 +17,10 @@ classes = [
 ]
 
 
-def dms_to_numpy_old(fold: int, path: str = '../data/UrbanSound_sr16000.dms') \
+def dms_to_numpy(fold: int, path: str = '../data/UrbanSound_sr16000.dms') \
         -> Tuple[List[np.ndarray], np.ndarray, List[np.ndarray], np.ndarray]:
     with open(path, 'rb') as fp:
         itemlist = pickle.load(fp)
-
-    itemlist.class_label.replace(
-        {
-            'air_conditioner': 0,
-            'car_horn': 1,
-            'children_playing': 2,
-            'dog_bark': 3,
-            'drilling': 4,
-            'engine_idling': 5,
-            'gun_shot': 6,
-            'jackhammer': 7,
-            'siren': 8,
-            'street_music': 9
-        },
-        inplace=True
-    )
-
-    train = itemlist[itemlist.fold != fold]
-    X_train = train.audio.values
-    y_train = np.eye(10)[train.class_label.values]
-
-    test = itemlist[itemlist.fold == fold]
-    X_test = test.audio.values
-    y_test = np.eye(10)[test.class_label.values]
-
-    return X_train, y_train, X_test, y_test
-
-
-def dms_to_numpy(fold: int, path: str = '../data/UrbanSound8K16') \
-        -> Tuple[List[np.ndarray], np.ndarray, List[np.ndarray], np.ndarray]:
-    itemlist = pd.read_pickle(path)
 
     itemlist.class_label.replace(
         {
