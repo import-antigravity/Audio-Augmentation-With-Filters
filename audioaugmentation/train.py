@@ -23,7 +23,8 @@ def train_baseline(model, optimizer, loss, name: str, num_epochs: int, batch_siz
         keras.callbacks.ModelCheckpoint(os.path.join(model_path, '{epoch:02d}-{val_loss:.4f}'),
                                         monitor='val_loss', verbose=0, save_best_only=True,
                                         save_weights_only=True, mode='auto', period=1),
-        keras.callbacks.CSVLogger(os.path.join(model_path, "model_history_log.csv"), append=True)
+        keras.callbacks.CSVLogger(os.path.join(model_path, "model_history_log.csv"), append=True),
+        keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=20)
     ]
 
     print(model.summary())

@@ -1,0 +1,6 @@
+model_checkpoint_path: "08-0.0380"
+all_model_checkpoint_paths: "01-0.0433"
+all_model_checkpoint_paths: "02-0.0410"
+all_model_checkpoint_paths: "03-0.0408"
+all_model_checkpoint_paths: "07-0.0395"
+all_model_checkpoint_paths: "08-0.0380"
