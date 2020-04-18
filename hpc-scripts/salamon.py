@@ -6,6 +6,7 @@ sys.path.append('..')
 from sys import argv
 
 # Naming convention "cnn_rand_{augm|base}_{fold}"
+import numpy as np
 from tensorflow import keras
 
 from audioaugmentation import models
@@ -25,6 +26,7 @@ X_train, y_train, X_test, y_test = dms_to_numpy(fold)
 def to_spectrogram(X):
     win_hop = 375
     S = librosa.feature.melspectrogram(X, sr=16000, n_mels=128, n_fft=win_hop, hop_length=win_hop)
+    S = librosa.power_to_db(S, ref=np.max)  # log-scaled
     return S
 
 

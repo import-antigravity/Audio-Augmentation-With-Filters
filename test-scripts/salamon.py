@@ -31,9 +31,12 @@ X_win_prep = np.zeros((X_win.shape[0], 128, 128))
 for i in range(X_win.shape[0]):
     win_hop = 375
     S = librosa.feature.melspectrogram(X_win[i], sr=16000, n_mels=128, n_fft=win_hop, hop_length=win_hop)
+    S = librosa.power_to_db(S, ref=np.max)  # log-scaled
     X_win_prep[i] = S
 
 y_hat_win = model.predict(X_win_prep)
+
+print(y_win[0], y_hat_win[0])
 
 msle = np.power(np.log(y_win + 1) - np.log(y_hat_win + 1), 2).mean()
 print(f"MSLE: {msle}")

@@ -36,7 +36,7 @@ def train_baseline(model, optimizer, loss, name: str, num_epochs: int, batch_siz
     os.makedirs(model_path, exist_ok=True)
 
     print('Dataset:', X_train.shape, y_train.shape)
-    model.compile(optimizer, loss=loss)
+    model.compile(optimizer, loss=loss, metrics=['accuracy'])
 
     if preprocess is None:
         X_test_w_prep = X_test_w
@@ -83,7 +83,7 @@ def train_augmented(model, optimizer, loss, name: str, num_epochs: int, batch_si
     os.makedirs(model_path, exist_ok=True)
 
     print('Dataset:', X_train.shape, y_train.shape)
-    model.compile(optimizer, loss=loss)
+    model.compile(optimizer, loss=loss, metrics=['accuracy'])
 
     n_samples_test = X_test_win.shape[0]
     if preprocess is not None:
