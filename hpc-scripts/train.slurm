@@ -6,8 +6,8 @@
 #SBATCH -C gpu2080 --gres=gpu:1
 #SBATCH --mail-user=grd27@case.edu
 #SBATCH --mail-type=ALL
-#SBATCH --output=cnn_rand16_salamon_10.txt
-#SBATCH --job-name="sa_2_10"
+#SBATCH --output=16_base_1.txt
+#SBATCH --job-name="16_0_1"
 
 echo "Loading modules..."
 
@@ -17,4 +17,4 @@ module load cuda/9.0
 
 cd ~/Audio-Augmentation-With-Filters/hpc-scripts
 echo "Running python script..."
-python cnn_rand16k.py 10 2
+python cnn_rand16k.py 1 0

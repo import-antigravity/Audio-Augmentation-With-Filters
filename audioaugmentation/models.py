@@ -83,3 +83,22 @@ def salamon():
     ]
 
     return tf.keras.Sequential(cnn)
+
+
+def test():
+    cnn = [
+        tf.keras.layers.InputLayer(input_shape=(128, 128)),
+        tf.keras.layers.Reshape((128, 128, 1)),
+        tf.keras.layers.Conv2D(24, (5, 5)),
+        tf.keras.layers.ReLU(),
+        tf.keras.layers.MaxPool2D((4, 2)),
+        tf.keras.layers.Conv2D(48, (5, 5)),
+        tf.keras.layers.ReLU(),
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(32),
+        tf.keras.layers.ReLU(),
+        tf.keras.layers.Dense(10),
+        tf.keras.layers.Softmax()
+    ]
+
+    return tf.keras.Sequential(cnn)
