@@ -5,7 +5,9 @@ import librosa
 sys.path.append('..')
 
 import numpy as np
+import pandas as pd
 import tensorflow as tf
+from matplotlib import pyplot as plt
 
 from audioaugmentation import models
 from audioaugmentation.data import dms_to_numpy, window_examples
@@ -13,9 +15,17 @@ from audioaugmentation.data import dms_to_numpy, window_examples
 fold = 2
 augmented = 0
 
+path = f'../models/salamon_{augmented if augmented else "base"}_{fold}'
+
 model = models.salamon()
-latest = tf.train.latest_checkpoint(f'../models/salamon_{augmented if augmented else "base"}_{fold}')
+latest = tf.train.latest_checkpoint(path)
 model.load_weights(latest)
+
+history = pd.read_csv(path + '/model_history_log.csv')
+plt.plot(history.loss, label='loss')
+plt.plot(history.val_loss, label='val_loss')
+plt.legend()
+plt.show()
 
 print(model.summary())
 

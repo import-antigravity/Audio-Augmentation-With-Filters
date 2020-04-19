@@ -210,6 +210,9 @@ class DataSequence(Sequence):
         for f in self.augment_functions:
             X_batch = f(X_batch)
 
+        # Normalize
+        X_batch = X_batch / np.abs(X_batch).max(axis=1).reshape(-1, 1)
+
         # window examples
         X_win, y_win, _ = window_examples(X_batch, y_batch, self.window_size, self.crossover)
 
