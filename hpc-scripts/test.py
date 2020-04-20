@@ -22,9 +22,11 @@ print(f'Training model test, fold {fold}, {"not " if not augmented else ""}augme
 
 X_train, y_train, X_test, y_test = dms_to_numpy(fold)
 
-idx = np.random.permutation(X_train.shape[0])[:50]
-X_train = X_train[idx]
-y_train = y_train[idx]
+X_train = X_train[:20]
+y_train = y_train[:20]
+X_test = X_train
+y_test = y_train
+
 
 def to_spectrogram(X):
     win_hop = 375
@@ -35,11 +37,11 @@ def to_spectrogram(X):
 
 kwargs = {
     'model': models.test(),
-    'optimizer': keras.optimizers.SGD(lr=0.01),
+    'optimizer': keras.optimizers.Adadelta(),
     'loss': keras.losses.categorical_crossentropy,
     'name': name,
     'num_epochs': 200,
-    'batch_size': 20,
+    'batch_size': 1,
     'window_size': 48000,
     'crossover': 0.5,
     'data': (X_train, y_train, X_test, y_test),

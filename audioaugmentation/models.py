@@ -94,8 +94,11 @@ def test():
         tf.keras.layers.MaxPool2D((4, 2)),
         tf.keras.layers.Conv2D(48, (5, 5)),
         tf.keras.layers.ReLU(),
+        tf.keras.layers.MaxPool2D((4, 2)),
+        tf.keras.layers.Conv2D(48, (5, 5)),
+        tf.keras.layers.ReLU(),
         tf.keras.layers.Flatten(),
-        tf.keras.layers.Dense(32),
+        tf.keras.layers.Dense(64),
         tf.keras.layers.ReLU(),
         tf.keras.layers.Dense(10),
         tf.keras.layers.Softmax()
